@@ -1,3 +1,10 @@
+/* Copyright (c) Columbo (columbo@gmx-topmail.de).
+	Distributed under the Boost Software License, Version 1.0. (See accompanying
+	file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) */
+
+#ifndef ALGORITHMS_HXX_INCLUDED
+#define ALGORITHMS_HXX_INCLUDED
+
 #include <utility>
 
 namespace Constainer {
@@ -40,3 +47,5 @@ constexpr void swap(T (&a)[N], T (&b)[N]) {
 }
 
 }
+
+#endif

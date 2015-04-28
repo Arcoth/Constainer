@@ -1,3 +1,10 @@
+/* Copyright (c) Columbo (columbo@gmx-topmail.de).
+	Distributed under the Boost Software License, Version 1.0. (See accompanying
+	file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt) */
+
+#ifndef ARRAY_HXX_INCLUDED
+#define ARRAY_HXX_INCLUDED
+
 #include "Algorithms.hxx"
 
 #include <cstddef> // size_t
@@ -58,3 +65,5 @@ constexpr void swap( Array<T, N>& lhs, Array<T, N>& rhs ) {
 }
 
 }
+
+#endif
