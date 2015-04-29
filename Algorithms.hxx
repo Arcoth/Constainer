@@ -5,6 +5,7 @@
 #ifndef ALGORITHMS_HXX_INCLUDED
 #define ALGORITHMS_HXX_INCLUDED
 
+#include <functional>
 #include <utility>
 
 namespace Constainer {
@@ -16,10 +17,50 @@ constexpr void swap(T& a, T& b) {
 	b = std::move(tmp);
 }
 
-template <typename InputIterator, typename OutputIterator>
-constexpr void copy(InputIterator first, InputIterator last, OutputIterator out) {
+template <typename InputIterator, typename T, typename Comp>
+constexpr auto find(InputIterator first, InputIterator last, T const& val, Comp comp) {
+	while (first != last && !comp(*first, val))
+		++first;
+	return first;
+}
+
+template <typename InputIterator, typename T>
+constexpr auto find(InputIterator first, InputIterator last, T const& val) {
+	return find(first, last, val, std::equal_to<>());
+}
+
+template <typename InputIt, typename OutputIt>
+constexpr OutputIt copy(InputIt first, InputIt last, OutputIt out) {
 	while (first != last)
 		*out++ = *first++;
+
+	return out;
+}
+
+template <typename BiDir, typename BiDir2>
+constexpr BiDir2 copy_backward(BiDir  first, BiDir last,
+                               BiDir2 last2) {
+	while (last != first)
+		*--last2 = *--last;
+
+	return last2;
+}
+
+template <typename BiDir, typename BiDir2>
+constexpr BiDir2 move_backward(BiDir  first, BiDir last,
+                               BiDir2 last2) {
+	while (last != first)
+		*--last2 = std::move(*--last);
+
+	return last2;
+}
+
+template<class InputIt, class OutputIt>
+constexpr OutputIt move(InputIt first, InputIt last, OutputIt out) {
+	while (first != last)
+		*out++ = std::move(*first++);
+
+	return out;
 }
 
 template <typename InputIterator, typename T>

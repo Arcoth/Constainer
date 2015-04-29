@@ -20,26 +20,30 @@ public:
 
 	using difference_type = std::ptrdiff_t;
 
-	using pointer = T*;
-	using const_pointer = T const*;
-	using reference = T&;
-	using const_reference = T const&;
-	using iterator = pointer;
+	using value_type = T;
+
+	using         pointer = value_type      *;
+	using   const_pointer = value_type const*;
+
+	using       reference = value_type      &;
+	using const_reference = value_type const&;
+
+	using       iterator =       pointer;
 	using const_iterator = const_pointer;
 
 private:
 
-	T _storage[size()] = {};
+	T _storage[size()];
 
 public:
 
 	constexpr pointer       data()       {return _storage;}
 	constexpr const_pointer data() const {return _storage;}
 
-	constexpr       reference front()       {return _storage[0       ];}
-	constexpr const_reference front() const {return _storage[0       ];}
-	constexpr       reference back ()       {return _storage[size()-1];}
-	constexpr const_reference back () const {return _storage[size()-1];}
+	constexpr       reference front()       {return *begin();}
+	constexpr const_reference front() const {return *begin();}
+	constexpr       reference back ()       {return end()[-1];}
+	constexpr const_reference back () const {return end()[-1];}
 
 	constexpr iterator       begin()       {return _storage         ;}
 	constexpr const_iterator begin() const {return _storage         ;}
@@ -50,8 +54,7 @@ public:
 	constexpr const_reference operator[](size_type index) const {return _storage[index];}
 
 	constexpr void fill(T const& value) {
-		for (auto& val : *this)
-			val = value;
+		Constainer::fill( begin(), end(), value );
 	}
 
 	constexpr void swap(Array& other) {
