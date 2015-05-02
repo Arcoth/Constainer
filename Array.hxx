@@ -35,11 +35,7 @@ public:
 	using const_reverse_iterator = reverse_iterator<const_iterator>;
 	using       reverse_iterator = reverse_iterator<      iterator>;
 
-private:
-
 	T _storage[size()];
-
-public:
 
 	constexpr pointer       data()       {return _storage;}
 	constexpr const_pointer data() const {return _storage;}
@@ -79,6 +75,31 @@ public:
 template <typename T, std::size_t N>
 constexpr void swap( Array<T, N>& lhs, Array<T, N>& rhs ) {
 	lhs.swap(rhs);
+}
+
+template <typename T1, std::size_t N1, typename T2, std::size_t N2>
+constexpr bool operator<( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
+	return N1 <= N2 && (N1 < N2 || lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()));
+}
+template <typename T1, std::size_t N1, typename T2, std::size_t N2>
+constexpr bool operator>( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
+	return rhs < lhs;
+}
+template <typename T1, std::size_t N1, typename T2, std::size_t N2>
+constexpr bool operator==( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
+	return equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+}
+template <typename T1, std::size_t N1, typename T2, std::size_t N2>
+constexpr bool operator!=( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
+	return !(lhs == rhs);
+}
+template <typename T1, std::size_t N1, typename T2, std::size_t N2>
+constexpr bool operator<=( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
+	return !(lhs > rhs);
+}
+template <typename T1, std::size_t N1, typename T2, std::size_t N2>
+constexpr bool operator>=( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
+	return !(lhs < rhs);
 }
 
 }

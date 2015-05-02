@@ -55,13 +55,12 @@ public:
 		fill_n( this->begin(), size(), v );
 	}
 
-	constexpr reverse_iterator       rbegin()       {return       reverse_iterator(end());}
-	constexpr const_reverse_iterator rbegin() const {return const_reverse_iterator(end());}
-	constexpr iterator       end()       {return this->begin() + size();}
-	constexpr const_iterator end() const {return this->begin() + size();}
-
 	constexpr const_reverse_iterator crbegin() const {return rbegin();}
 	constexpr const_iterator            cend() const {return    end();}
+	constexpr reverse_iterator        rbegin()       {return       reverse_iterator(end());}
+	constexpr const_reverse_iterator  rbegin() const {return const_reverse_iterator(end());}
+	constexpr iterator                   end()       {return this->begin() + size();}
+	constexpr const_iterator             end() const {return this->begin() + size();}
 
 	constexpr       reference back ()       {return end()[-1];}
 	constexpr const_reference back () const {return end()[-1];}

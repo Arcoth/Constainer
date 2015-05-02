@@ -109,6 +109,81 @@ constexpr T accumulate(InputIt first, InputIt last, T init)
 	accumulate(first, last, init, std::plus<>());
 }
 
+template <typename InputIt1, typename InputIt2, typename Comp>
+constexpr std::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
+                                                 InputIt2 first2, Comp comp) {
+	for (; first1 != last1; ++first1, ++first2)
+		if (!comp(*first1, *first2))
+			break;
+	return {first1, first2};
+}
+
+template <typename InputIt1, typename InputIt2, typename Comp>
+constexpr std::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
+	// Prevent ADL for std::equal_to
+	return (mismatch)(first1, last1, first2, std::equal_to<>());
+}
+
+template <typename InputIt1, typename InputIt2, typename Comp>
+constexpr std::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
+                                                 InputIt2 first2, InputIt2 last2, Comp comp) {
+	while (first1 != last1 && first2 != last2) {
+		if (!comp(*first1, *first2))
+			break;
+		++first1; ++first2;
+	}
+
+	return {first1, first2};
+}
+
+template <typename InputIt1, typename InputIt2, typename Comp>
+constexpr std::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
+                                                 InputIt2 first2, InputIt2 last2) {
+	// Prevent ADL for std::equal_to
+	return (mismatch)(first1, last1, first2, last2, std::equal_to<>());
+}
+
+template <typename InputIt1, typename InputIt2, typename Compare>
+constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1,
+                                       InputIt2 first2, InputIt2 last2,
+                                       Compare comp) {
+	while (first1 != last1 && first2 != last2) {
+		if (comp(*first1, *first2)) return true;
+		if (comp(*first2, *first1)) return false;
+		++first1; ++first2;
+	}
+	return (first1 == last1) && (first2 != last2);
+}
+
+template <typename InputIt1, typename InputIt2>
+constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1,
+                                       InputIt2 first2, InputIt2 last2) {
+	// Prevent ADL for std::less
+	return (lexicographical_compare)(first1, last1, first2, last2, std::less<>());
+}
+
+template <typename Input1, typename Input2, typename Comp>
+constexpr bool equal( Input1 first1, Input1 last1, Input2 first2, Comp comp ) {
+	// Prevent ADL for comp
+	return (mismatch)(first1, last1, first2, comp).first == last1;
+}
+template <typename Input1, typename Input2>
+constexpr bool equal( Input1 first1, Input1 last1, Input2 first2 ) {
+	// Prevent ADL for std::equal_to
+	return (equal)(first1, last1, first2, std::equal_to<>());
+}
+template <typename Input1, typename Input2, typename Comp>
+constexpr bool equal( Input1 first1, Input1 last1, Input2 first2, Input2 last2, Comp comp ) {
+	// Prevent ADL for comp
+	auto p = (mismatch)(first1, last1, first2, last2, comp);
+	return p.first == last1 && p.second == last2;
+}
+template <typename Input1, typename Input2>
+constexpr bool equal( Input1 first1, Input1 last1, Input2 first2, Input2 last2 ) {
+	// Prevent ADL for std::equal_to
+	return (equal)(first1, last1, first2, last2, std::equal_to<>());
+}
+
 }
 
 #endif
