@@ -94,6 +94,14 @@ constexpr void iota(ForwardIterator first, ForwardIterator last, T value) {
 	}
 }
 
+template <typename ForwardIterator, typename SizeType, typename T>
+constexpr void iota_n(ForwardIterator first, SizeType n, T value) {
+	while (n--) {
+		*first++ = value;
+		++value;
+	}
+}
+
 template <typename InputIt, typename T, typename BinaryOp>
 constexpr T accumulate(InputIt first, InputIt last, T init, BinaryOp op)
 {
@@ -106,7 +114,8 @@ constexpr T accumulate(InputIt first, InputIt last, T init, BinaryOp op)
 template <typename InputIt, typename T>
 constexpr T accumulate(InputIt first, InputIt last, T init)
 {
-	accumulate(first, last, init, std::plus<>());
+	// Prevent ADL
+	(accumulate)(first, last, init, std::plus<>());
 }
 
 template <typename InputIt1, typename InputIt2, typename Comp>
@@ -120,7 +129,7 @@ constexpr std::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1
 
 template <typename InputIt1, typename InputIt2, typename Comp>
 constexpr std::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
-	// Prevent ADL for std::equal_to
+	// Prevent ADL
 	return (mismatch)(first1, last1, first2, std::equal_to<>());
 }
 
@@ -139,7 +148,7 @@ constexpr std::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1
 template <typename InputIt1, typename InputIt2, typename Comp>
 constexpr std::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
                                                  InputIt2 first2, InputIt2 last2) {
-	// Prevent ADL for std::equal_to
+	// Prevent ADL
 	return (mismatch)(first1, last1, first2, last2, std::equal_to<>());
 }
 
@@ -158,29 +167,29 @@ constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1,
 template <typename InputIt1, typename InputIt2>
 constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1,
                                        InputIt2 first2, InputIt2 last2) {
-	// Prevent ADL for std::less
+	// Prevent ADL
 	return (lexicographical_compare)(first1, last1, first2, last2, std::less<>());
 }
 
 template <typename Input1, typename Input2, typename Comp>
 constexpr bool equal( Input1 first1, Input1 last1, Input2 first2, Comp comp ) {
-	// Prevent ADL for comp
+	// Prevent ADL
 	return (mismatch)(first1, last1, first2, comp).first == last1;
 }
 template <typename Input1, typename Input2>
 constexpr bool equal( Input1 first1, Input1 last1, Input2 first2 ) {
-	// Prevent ADL for std::equal_to
+	// Prevent ADL
 	return (equal)(first1, last1, first2, std::equal_to<>());
 }
 template <typename Input1, typename Input2, typename Comp>
 constexpr bool equal( Input1 first1, Input1 last1, Input2 first2, Input2 last2, Comp comp ) {
-	// Prevent ADL for comp
+	// Prevent ADL
 	auto p = (mismatch)(first1, last1, first2, last2, comp);
 	return p.first == last1 && p.second == last2;
 }
 template <typename Input1, typename Input2>
 constexpr bool equal( Input1 first1, Input1 last1, Input2 first2, Input2 last2 ) {
-	// Prevent ADL for std::equal_to
+	// Prevent ADL
 	return (equal)(first1, last1, first2, last2, std::equal_to<>());
 }
 
