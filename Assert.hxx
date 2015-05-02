@@ -17,7 +17,7 @@ constexpr void AssertExcept(bool b, Args&&... args) {
 	if (!b) throw Except(std::forward<Args>(args)...);
 }
 
-constexpr void Assert(bool b) {
+constexpr void Assert(bool b, char const* = nullptr) {
 	if (!b) std::abort();
 }
 

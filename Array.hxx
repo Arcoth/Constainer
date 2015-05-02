@@ -6,6 +6,7 @@
 #define ARRAY_HXX_INCLUDED
 
 #include "Algorithms.hxx"
+#include "Iterator.hxx"
 
 #include <cstddef> // size_t
 
@@ -31,6 +32,9 @@ public:
 	using       iterator =       pointer;
 	using const_iterator = const_pointer;
 
+	using const_reverse_iterator = reverse_iterator<const_iterator>;
+	using       reverse_iterator = reverse_iterator<      iterator>;
+
 private:
 
 	T _storage[size()];
@@ -49,6 +53,11 @@ public:
 	constexpr const_iterator begin() const {return _storage         ;}
 	constexpr iterator       end  ()       {return _storage + size();}
 	constexpr const_iterator end  () const {return _storage + size();}
+
+	constexpr reverse_iterator       rbegin()       {return       reverse_iterator(  end());}
+	constexpr const_reverse_iterator rbegin() const {return const_reverse_iterator(  end());}
+	constexpr reverse_iterator       rend  ()       {return       reverse_iterator(begin());}
+	constexpr const_reverse_iterator rend  () const {return const_reverse_iterator(begin());}
 
 	constexpr reference       operator[](size_type index)       {return _storage[index];}
 	constexpr const_reference operator[](size_type index) const {return _storage[index];}
