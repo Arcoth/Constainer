@@ -49,15 +49,20 @@ public:
 	constexpr       reference back ()       {return end()[-1];}
 	constexpr const_reference back () const {return end()[-1];}
 
-	constexpr iterator       begin()       {return _storage         ;}
-	constexpr const_iterator begin() const {return _storage         ;}
-	constexpr iterator       end  ()       {return _storage + size();}
-	constexpr const_iterator end  () const {return _storage + size();}
+	constexpr iterator        begin()       {return _storage         ;}
+	constexpr const_iterator  begin() const {return _storage         ;}
+	constexpr iterator        end  ()       {return _storage + size();}
+	constexpr const_iterator  end  () const {return _storage + size();}
+	constexpr const_iterator cbegin() const {return begin();}
+	constexpr const_iterator cend  () const {return   end();}
 
-	constexpr reverse_iterator       rbegin()       {return       reverse_iterator(  end());}
-	constexpr const_reverse_iterator rbegin() const {return const_reverse_iterator(  end());}
-	constexpr reverse_iterator       rend  ()       {return       reverse_iterator(begin());}
-	constexpr const_reverse_iterator rend  () const {return const_reverse_iterator(begin());}
+	constexpr reverse_iterator        rbegin()       {return       reverse_iterator(  end());}
+	constexpr const_reverse_iterator  rbegin() const {return const_reverse_iterator(  end());}
+	constexpr reverse_iterator        rend  ()       {return       reverse_iterator(begin());}
+	constexpr const_reverse_iterator  rend  () const {return const_reverse_iterator(begin());}
+	constexpr const_reverse_iterator crbegin() const {return rbegin();}
+	constexpr const_reverse_iterator crend  () const {return rend();}
+
 
 	constexpr reference       operator[](size_type index)       {return _storage[index];}
 	constexpr const_reference operator[](size_type index) const {return _storage[index];}

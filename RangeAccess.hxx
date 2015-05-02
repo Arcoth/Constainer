@@ -39,11 +39,14 @@ namespace Constainer {
 	using namespace RA_detail;
 
 	template <typename T>
-	constexpr auto rbegin(T&& t)
-	{return make_reverse_iterator(end  (std::forward<T>(t)));}
+	constexpr auto rbegin(T& t) {return make_reverse_iterator(  end(t));}
 	template <typename T>
-	constexpr auto rend  (T&& t)
-	{return make_reverse_iterator(begin(std::forward<T>(t)));}
+	constexpr auto rend  (T& t) {return make_reverse_iterator(begin(t));}
+
+	template <typename T>
+	constexpr decltype(auto) cbegin(T const& t) {return   end(t);}
+	template <typename T>
+	constexpr decltype(auto) cend  (T const& t) {return begin(t);}
 
 	/*! decayed_begin/_end behave similar to begin/end, but return a pointer to the
 	    first underlying element if the argument is a multi-dimensional array. */
@@ -57,9 +60,9 @@ namespace Constainer {
 	{ return decayed_end  (*c); }
 
 	template <typename T>
-	constexpr decltype(auto) decayed_begin(T&& t) { return begin(std::forward<T>(t)); }
+	constexpr decltype(auto) decayed_begin(T& t) { return begin(t); }
 	template <typename T>
-	constexpr decltype(auto) decayed_end  (T&& t) { return end  (std::forward<T>(t)); }
+	constexpr decltype(auto) decayed_end  (T& t) { return   end(t); }
 }
 
 #endif // RANGEACCESS_HXX_INCLUDED

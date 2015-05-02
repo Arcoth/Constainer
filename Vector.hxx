@@ -38,11 +38,14 @@ private:
 public:
 
 	using _base::rend;
+	using _base::crend;
 	using _base::begin;
+	using _base::cbegin;
 	using _base::front;
 	static constexpr auto max_size() {return _base::size();}
 
 	constexpr auto size() const {return _size;}
+	constexpr bool empty() const {return size() == 0;}
 
 	constexpr Vector() :_base{},  _size(0) {}
 
@@ -52,10 +55,13 @@ public:
 		fill_n( this->begin(), size(), v );
 	}
 
-	constexpr reverse_iterator       rbegin()       {return       reverse_iterator(  end());}
-	constexpr const_reverse_iterator rbegin() const {return const_reverse_iterator(  end());}
+	constexpr reverse_iterator       rbegin()       {return       reverse_iterator(end());}
+	constexpr const_reverse_iterator rbegin() const {return const_reverse_iterator(end());}
 	constexpr iterator       end()       {return this->begin() + size();}
 	constexpr const_iterator end() const {return this->begin() + size();}
+
+	constexpr const_reverse_iterator crbegin() const {return rbegin();}
+	constexpr const_iterator            cend() const {return    end();}
 
 	constexpr       reference back ()       {return end()[-1];}
 	constexpr const_reference back () const {return end()[-1];}
@@ -97,6 +103,8 @@ public:
 	constexpr void erase( const_iterator it ) {
 		erase(it, it+1);
 	}
+
+	constexpr void pop_back() {Assert(size() >= 1, "Can't pop"); erase(end()-1);}
 
 	template <typename U, std::size_t OtherMax>
 	constexpr void swap( Vector<U, OtherMax>& other ) {
