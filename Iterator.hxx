@@ -6,6 +6,14 @@
 namespace Constainer {
 
 template <typename InputIt>
+constexpr auto distance( InputIt first, InputIt last ) {
+	typename std::iterator_traits<InputIt>::difference_type n = 0;
+	for (; first != last; ++first)
+		++n;
+	return n;
+}
+
+template <typename InputIt>
 constexpr void advance( InputIt& it, typename std::iterator_traits<InputIt>::difference_type n ) {
 	if (n < 0)
 		do --it;
@@ -168,8 +176,8 @@ constexpr auto operator -(const reverse_iterator<I1>& lhs, const reverse_iterato
 { return rhs.base() - lhs.base(); }
 
 template <typename I>
-constexpr std::reverse_iterator<I> make_reverse_iterator( I i )
-{ return std::reverse_iterator<I>(i); }
+constexpr reverse_iterator<I> make_reverse_iterator( I i )
+{ return reverse_iterator<I>(i); }
 
 }
 

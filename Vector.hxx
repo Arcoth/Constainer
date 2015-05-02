@@ -28,8 +28,8 @@ private:
 	constexpr void _verifySize() const {
 		AssertExcept<std::bad_alloc>( size() <= MaxN );
 	}
-	constexpr void _sizeIncable() const {
-		AssertExcept<std::bad_alloc>( size() <= MaxN-1 );
+	constexpr void _sizeIncable(size_type s = 1) const {
+		AssertExcept<std::bad_alloc>( size() <= MaxN-s );
 	}
 	constexpr void _verifiedSizeInc() {
 		++_size; _verifySize();
@@ -96,12 +96,29 @@ public:
 	}
 
 	constexpr void erase( const_iterator first, const_iterator last ) {
-		move_backward( const_cast<iterator>(last),    this->end(),
-		               const_cast<iterator>(first) + (this->end() - last));
+		move( const_cast<iterator>(last),    this->end(),
+		      const_cast<iterator>(first));
 		_size -= last-first;
 	}
 	constexpr void erase( const_iterator it ) {
 		erase(it, it+1);
+	}
+
+	template <typename InputIterator>
+	constexpr void insert( const_iterator pos, InputIterator first, InputIterator last ) {
+		auto size_increase = distance(first, last);
+		_sizeIncable(size_increase);
+		move_backward( const_cast<iterator>(pos), end(), end()+size_increase );
+		copy( first, last, const_cast<iterator>(pos) );
+		_size += size_increase;
+	}
+
+	constexpr void insert( const_iterator i, value_type const& r ) {
+		insert(i, &r, &r+1);
+	}
+
+	constexpr void insert( const_iterator i, std::initializer_list<value_type> ilist ) {
+		insert(i, ilist.begin(), ilist.end());
 	}
 
 	constexpr void pop_back() {Assert(size() >= 1, "Can't pop"); erase(end()-1);}
