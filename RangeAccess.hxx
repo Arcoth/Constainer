@@ -69,4 +69,6 @@ namespace Constainer {
 	constexpr decltype(auto) decayed_end  (T& t) { return   end(t); }
 }
 
+#undef CONSTAINER_AUTORET
+
 #endif // RANGEACCESS_HXX_INCLUDED
