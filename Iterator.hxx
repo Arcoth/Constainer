@@ -49,77 +49,75 @@ constexpr auto prev( InputIt it, typename std::iterator_traits<InputIt>::differe
 }
 
 template<typename Iterator>
-class reverse_iterator :
-	public std::iterator<typename std::iterator_traits<Iterator>::iterator_category,
-	                     typename std::iterator_traits<Iterator>::value_type,
-	                     typename std::iterator_traits<Iterator>::difference_type,
-	                     typename std::iterator_traits<Iterator>::pointer,
-	                     typename std::iterator_traits<Iterator>::reference>
+class reverse_iterator
 {
-	Iterator current;
+	Iterator _current;
 
-	using traits_type = std::iterator_traits<Iterator>;
+	using _traits_type = std::iterator_traits<Iterator>;
 
 public:
 
-	using iterator_type = Iterator;
-	using difference_type = typename traits_type::difference_type;
-	using pointer         = typename traits_type::pointer;
-	using reference       = typename traits_type::reference;
+	using iterator_type     = Iterator;
 
-	constexpr reverse_iterator() : current() { }
+	using difference_type   = typename _traits_type::difference_type;
+	using pointer           = typename _traits_type::pointer;
+	using reference         = typename _traits_type::reference;
+	using value_type        = typename _traits_type::value_type;
+	using iterator_category = typename _traits_type::iterator_category;
 
-	constexpr explicit reverse_iterator(iterator_type i) : current(i) {}
+	constexpr reverse_iterator() : _current() { }
+
+	constexpr explicit reverse_iterator(iterator_type i) : _current(i) {}
 
 	constexpr reverse_iterator(const reverse_iterator&) = default;
 
 	template<typename It>
 	constexpr  reverse_iterator(reverse_iterator<It> const& other)
-	: current(other.base()) { }
+	: _current(other.base()) { }
 
-	constexpr iterator_type base() const { return current; }
+	constexpr iterator_type base() const { return _current; }
 
 	constexpr reference operator*() const {
-		return *prev(current);
+		return *prev(_current);
 	}
 
 	constexpr pointer operator->() const { return &operator*(); }
 
 	constexpr reverse_iterator& operator++() {
-		--current;
+		--_current;
 		return *this;
 	}
 
 	constexpr reverse_iterator operator++(int) {
 		reverse_iterator t = *this;
-		--current;
+		--_current;
 		return t;
 	}
 
 	constexpr reverse_iterator& operator--() {
-		++current;
+		++_current;
 		return *this;
 	}
 
 	constexpr reverse_iterator operator--(int) {
 		reverse_iterator t = *this;
-		++current;
+		++_current;
 		return t;
 	}
 
 	constexpr reverse_iterator operator+(difference_type n) const
-	{ return reverse_iterator(current - n); }
+	{ return reverse_iterator(_current - n); }
 
 	constexpr reverse_iterator& operator+=(difference_type n) {
-		current -= n;
+		_current -= n;
 		return *this;
 	}
 
 	constexpr reverse_iterator operator-(difference_type n) const
-	{ return reverse_iterator(current + n); }
+	{ return reverse_iterator(_current + n); }
 
 	constexpr reverse_iterator& operator-=(difference_type n) {
-		current += n;
+		_current += n;
 		return *this;
 	}
 
