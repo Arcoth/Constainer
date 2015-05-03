@@ -5,6 +5,8 @@
 #ifndef ALGORITHMS_HXX_INCLUDED
 #define ALGORITHMS_HXX_INCLUDED
 
+#include "Iterator.hxx"
+
 #include <functional>
 #include <utility>
 
@@ -46,19 +48,13 @@ constexpr auto copy_backward(BiDir  first, BiDir last, BiDir2 last2) {
 }
 
 template <typename BiDir, typename BiDir2>
-constexpr auto move_backward(BiDir  first, BiDir last, BiDir2 last2) {
-	while (last != first)
-		*--last2 = std::move(*--last);
-
-	return last2;
+constexpr auto move_backward(BiDir first, BiDir last, BiDir2 last2) {
+	copy_backward(make_move_iterator(first), make_move_iterator(last), last2);
 }
 
 template<class InputIt, class OutputIt>
 constexpr auto move(InputIt first, InputIt last, OutputIt out) {
-	while (first != last)
-		*out++ = std::move(*first++);
-
-	return out;
+	copy(make_move_iterator(first), make_move_iterator(last), out);
 }
 
 template <typename ForwardIt, typename T>

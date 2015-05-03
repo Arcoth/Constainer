@@ -8,9 +8,11 @@
 #include "Array.hxx"
 #include "Assert.hxx"
 
+#include <algorithm>
+
 namespace Constainer {
 
-// inb4 you can drop the private y'know
+// inb4 you can drop the private y'know8
 template <typename T, std::size_t MaxN>
 class Vector : private Array<T, MaxN> {
 
@@ -58,6 +60,35 @@ public:
 	constexpr Vector( size_type s, value_type const& v ) : Vector(s) {
 		fill_n( this->begin(), size(), v );
 	}
+
+	template <typename InputIterator,
+	          typename=requires<isInputIterator<InputIterator>>>
+	constexpr Vector( InputIterator first, InputIterator last )
+		: Vector(distance(first, last)) {
+		copy(first, last, begin());
+	}
+
+private:
+	template <std::size_t OtherN>
+	constexpr Vector(Vector<value_type, OtherN> const& other, int)
+		: Vector(other.begin(), other.end()) {}
+
+	template <std::size_t OtherN>
+	constexpr Vector(Vector<value_type, OtherN>     && other, int)
+		: Vector(make_move_iterator(other.begin()), make_move_iterator(other.end())) {}
+
+public:
+
+	template <std::size_t OtherN>
+	constexpr Vector(Vector<value_type, OtherN> const& other) : Vector(other, 0) {}
+	template <std::size_t OtherN>
+	constexpr Vector(Vector<value_type, OtherN>     && other) : Vector(std::move(other), 0) {}
+
+	constexpr Vector(Vector const& other) : Vector(other, 0) {}
+	constexpr Vector(Vector&& other)      : Vector(std::move(other), 0) {}
+
+	constexpr Vector(std::initializer_list<value_type> ilist)
+		: Vector(std::begin(ilist), std::end(ilist)) {}
 
 	constexpr const_reverse_iterator crbegin() const {return rbegin();}
 	constexpr const_iterator            cend() const {return    end();}
@@ -107,8 +138,9 @@ public:
 		erase(it, it+1);
 	}
 
-	template <typename InputIterator>
-	constexpr void insert( const_iterator pos, InputIterator first, InputIterator last ) {
+	template <typename InputIt>
+	constexpr requires<isInputIterator<InputIt>>
+	insert( const_iterator pos, InputIt first, InputIt last ) {
 		auto size_increase = distance(first, last);
 		_sizeIncable(size_increase);
 		move_backward( const_cast<iterator>(pos), end(), end()+size_increase );
@@ -116,8 +148,21 @@ public:
 		_size += size_increase;
 	}
 
-	constexpr void insert( const_iterator i, value_type const& r ) {
-		insert(i, &r, &r+1);
+	template <typename... Args>
+	constexpr void emplace( const_iterator i, Args&&... args ) {
+		// TODO: Avoid unnecessary copy
+		insert(i, value_type(std::forward<Args>(args)...));
+	}
+
+	constexpr void insert( const_iterator i, value_type const& v ) {
+		insert(i, &v, &v+1);
+	}
+
+	constexpr void insert( const_iterator pos, size_type c, value_type const& v ) {
+		_sizeIncable(c);
+		move_backward( const_cast<iterator>(pos), end(), end()+c );
+		fill_n( const_cast<iterator>(pos), c, v);
+		_size += c;
 	}
 
 	constexpr void insert( const_iterator i, std::initializer_list<value_type> ilist ) {
