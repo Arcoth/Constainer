@@ -72,6 +72,11 @@ public:
 	}
 };
 
+template <typename T, std::size_t Size> constexpr auto begin(Array<T, Size> const& a) {return a.begin();}
+template <typename T, std::size_t Size> constexpr auto   end(Array<T, Size> const& a) {return a.  end();}
+template <typename T, std::size_t Size> constexpr auto begin(Array<T, Size>      & a) {return a.begin();}
+template <typename T, std::size_t Size> constexpr auto   end(Array<T, Size>      & a) {return a.  end();}
+
 template <typename T, std::size_t N>
 constexpr void swap( Array<T, N>& lhs, Array<T, N>& rhs ) {
 	lhs.swap(rhs);

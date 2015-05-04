@@ -13,7 +13,8 @@ namespace Constainer {
 
 template <typename RandomIt>
 constexpr auto distance( RandomIt first, RandomIt last )
-	-> std::enable_if_t<isRandomAccessIterator<RandomIt>{}, decltype(last-first)>
+	-> std::enable_if_t<isRandomAccessIterator<RandomIt>{},
+	                    typename std::iterator_traits<RandomIt>::difference_type>
 { return last-first; }
 
 template <typename InputIt>
@@ -27,8 +28,15 @@ constexpr auto distance( InputIt first, InputIt last )
 	return n;
 }
 
-template <typename InputIt>
-constexpr void advance( InputIt& it, typename std::iterator_traits<InputIt>::difference_type n ) {
+template <typename RandomIt, typename Distance>
+constexpr auto advance( RandomIt& it, Distance n )
+	-> std::enable_if_t<isRandomAccessIterator<RandomIt>{}>
+{it += n;}
+
+template <typename InputIt, typename Distance>
+constexpr auto advance( InputIt& it, Distance n )
+	-> std::enable_if_t<!isRandomAccessIterator<InputIt>{}>
+{
 	if (n < 0)
 		do --it;
 		while (++n);
@@ -37,14 +45,14 @@ constexpr void advance( InputIt& it, typename std::iterator_traits<InputIt>::dif
 			++it;
 }
 
-template <typename InputIt>
-constexpr auto next( InputIt it, typename std::iterator_traits<InputIt>::difference_type n=1 ) {
+template <typename InputIt, typename Distance>
+constexpr auto next( InputIt it, Distance n=1 ) {
 	advance(it, n);
 	return it;
 }
 
-template <typename InputIt>
-constexpr auto prev( InputIt it, typename std::iterator_traits<InputIt>::difference_type n=1 ) {
+template <typename InputIt, typename Distance>
+constexpr auto prev( InputIt it, Distance n=1 ) {
 	return next(it, -n);
 }
 
@@ -282,6 +290,7 @@ operator+(typename move_iterator<I>::difference_type n, move_iterator<I> const& 
 template <typename I>
 constexpr move_iterator<I> make_move_iterator(I i)
 { return move_iterator<I>(i); }
+
 
 }
 

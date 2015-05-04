@@ -12,12 +12,22 @@
 
 namespace Constainer {
 
-template <typename T>
-constexpr void swap(T& a, T& b) {
-	T tmp = std::move(a);
-	a = std::move(b);
-	b = std::move(tmp);
+namespace detail {
+	template <typename T>
+	constexpr void swap(T& a, T& b, ...) {
+		T tmp = std::move(a);
+		a = std::move(b);
+		b = std::move(tmp);
+	}
+
+	template <typename T>
+	constexpr auto swap(T& a, T& b, int) -> decltype(void(a.swap(b))) {
+		a.swap(b);
+	}
 }
+
+template <typename T>
+constexpr void swap(T& a, T& b) {detail::swap(a,b,0);}
 
 template <typename InputIterator, typename T, typename Comp>
 constexpr auto find(InputIterator first, InputIterator last, T const& val, Comp comp) {
@@ -39,6 +49,14 @@ constexpr auto copy(InputIt first, InputIt last, OutputIt out) {
 	return out;
 }
 
+template <typename InputIt, typename SizeType, typename OutputIt>
+constexpr auto copy_n(InputIt first, SizeType count, OutputIt out) {
+	while (count-- != 0)
+		*out++ = *first++;
+
+	return out;
+}
+
 template <typename BiDir, typename BiDir2>
 constexpr auto copy_backward(BiDir  first, BiDir last, BiDir2 last2) {
 	while (last != first)
@@ -47,14 +65,19 @@ constexpr auto copy_backward(BiDir  first, BiDir last, BiDir2 last2) {
 	return last2;
 }
 
-template <typename BiDir, typename BiDir2>
-constexpr auto move_backward(BiDir first, BiDir last, BiDir2 last2) {
-	copy_backward(make_move_iterator(first), make_move_iterator(last), last2);
-}
-
 template<class InputIt, class OutputIt>
 constexpr auto move(InputIt first, InputIt last, OutputIt out) {
-	copy(make_move_iterator(first), make_move_iterator(last), out);
+	return (copy)(make_move_iterator(first), make_move_iterator(last), out);
+}
+
+template<class InputIt, typename SizeType, class OutputIt>
+constexpr auto move_n(InputIt first, SizeType count, OutputIt out) {
+	return (copy_n)(make_move_iterator(first), count, out);
+}
+
+template <typename BiDir, typename BiDir2>
+constexpr auto move_backward(BiDir first, BiDir last, BiDir2 last2) {
+	return (copy_backward)(make_move_iterator(first), make_move_iterator(last), last2);
 }
 
 template <typename ForwardIt, typename T>
@@ -72,14 +95,14 @@ constexpr void fill_n(ForwardIt first, SizeType count, T const& value) {
 template <typename ForwardIt, typename ForwardIt2>
 constexpr auto swap_ranges(ForwardIt first, ForwardIt last, ForwardIt2 first2) {
 	while (first != last)
-		swap(*first++, *first2++);
+		(swap)(*first++, *first2++);
 
 	return first;
 }
 
 template <typename T, std::size_t N>
 constexpr void swap(T (&a)[N], T (&b)[N]) {
-	swap_ranges(a, a+N, b);
+	(swap_ranges)(a, a+N, b);
 }
 
 template <typename ForwardIterator, typename T>
