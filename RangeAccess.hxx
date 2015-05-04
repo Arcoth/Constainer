@@ -67,6 +67,12 @@ namespace Constainer {
 	constexpr decltype(auto) decayed_begin(T& t) { return begin(t); }
 	template <typename T>
 	constexpr decltype(auto) decayed_end  (T& t) { return   end(t); }
+
+	template <typename T>
+	constexpr auto size(T& t) -> decltype(t.size()) {return t.size();}
+
+	template <typename T, std::size_t N>
+	constexpr std::size_t size(T (&t)[N]) {return N;}
 }
 
 #undef CONSTAINER_AUTORET

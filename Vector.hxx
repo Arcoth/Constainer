@@ -78,17 +78,44 @@ private:
 		: Vector(make_move_iterator(other.begin()), make_move_iterator(other.end())) {}
 
 public:
+	template <std::size_t N>
+	using ThisResized = Vector<value_type, N>;
 
 	template <std::size_t OtherN>
-	constexpr Vector(Vector<value_type, OtherN> const& other) : Vector(other, 0) {}
+	constexpr Vector(ThisResized<OtherN> const& other) : Vector(other, 0) {}
 	template <std::size_t OtherN>
-	constexpr Vector(Vector<value_type, OtherN>     && other) : Vector(std::move(other), 0) {}
+	constexpr Vector(ThisResized<OtherN>     && other) : Vector(std::move(other), 0) {}
 
 	constexpr Vector(Vector const& other) : Vector(other, 0) {}
 	constexpr Vector(Vector&& other)      : Vector(std::move(other), 0) {}
 
 	constexpr Vector(std::initializer_list<value_type> ilist)
 		: Vector(std::begin(ilist), std::end(ilist)) {}
+
+public:
+	template <std::size_t OtherN>
+	constexpr Vector& operator=( ThisResized<OtherN> const& other ) {
+		AssertExcept<std::bad_alloc>( other.size() <= max_size() );
+		assign(other.begin(), other.end());
+		return *this;
+	}
+
+	template <std::size_t OtherN>
+	constexpr Vector& operator=( ThisResized<OtherN>&& other ) {
+		AssertExcept<std::bad_alloc>( other.size() <= max_size() );
+		assign(make_move_iterator(other.begin()), make_move_iterator(other.end()));
+		other.clear();
+		return *this;
+	}
+
+	constexpr Vector& operator=( Vector const& other )
+	{ return operator=<>(other); }
+
+	constexpr Vector& operator=( Vector&& other )
+	{ return operator=<>(std::move(other)); }
+
+	constexpr Vector& operator=( std::initializer_list<value_type> ilist )
+	{ assign(begin(ilist), end(ilist)); return *this; }
 
 	constexpr const_reverse_iterator crbegin() const {return rbegin();}
 	constexpr const_iterator            cend() const {return    end();}
@@ -138,9 +165,17 @@ public:
 		erase(it, it+1);
 	}
 
+	constexpr void clear() {_size = 0;}
+
+private:
 	template <typename InputIt>
-	constexpr requires<isInputIterator<InputIt>>
-	insert( const_iterator pos, InputIt first, InputIt last ) {
+	constexpr void _insert( iterator pos, InputIt first, InputIt last, std::input_iterator_tag ) {
+		while (first != last)
+			insert(pos++, *first++);
+	}
+
+	template <typename ForwardIt>
+	constexpr void _insert( iterator pos, ForwardIt first, ForwardIt last, std::forward_iterator_tag ) {
 		auto size_increase = distance(first, last);
 		_sizeIncable(size_increase);
 		move_backward( const_cast<iterator>(pos), end(), end()+size_increase );
@@ -148,15 +183,31 @@ public:
 		_size += size_increase;
 	}
 
+	template <typename U>
+	constexpr void _insert( const_iterator pos, U&& u ) {
+		_sizeIncable();
+		auto it = const_cast<iterator>(pos);
+		move_backward( it, end(), end()+1 );
+		*it = std::forward<U>(u);
+		++_size;
+	}
+
+public:
+	template <typename InputIt>
+	constexpr requires<isInputIterator<InputIt>>
+	insert( const_iterator pos, InputIt first, InputIt last ) {
+		_insert(const_cast<iterator>(pos), first, last,
+		        typename std::iterator_traits<InputIt>::iterator_category());
+	}
+
 	template <typename... Args>
 	constexpr void emplace( const_iterator i, Args&&... args ) {
-		// TODO: Avoid unnecessary copy
+		// TODO: Avoid unnecessary copy (?)
 		insert(i, value_type(std::forward<Args>(args)...));
 	}
 
-	constexpr void insert( const_iterator i, value_type const& v ) {
-		insert(i, &v, &v+1);
-	}
+	constexpr void insert( const_iterator pos, value_type const& v ) {_insert(pos, v);}
+	constexpr void insert( const_iterator pos, value_type     && v ) {_insert(pos, std::move(v));}
 
 	constexpr void insert( const_iterator pos, size_type c, value_type const& v ) {
 		_sizeIncable(c);
@@ -169,6 +220,14 @@ public:
 		insert(i, ilist.begin(), ilist.end());
 	}
 
+	template <class InputIt>
+	constexpr requires<isInputIterator<InputIt>>
+	assign(InputIt first, InputIt last) {
+		clear();
+		while (first != last)
+			emplace_back(*first++);
+	}
+
 	constexpr void pop_back() {Assert(size() >= 1, "Can't pop"); erase(end()-1);}
 
 	template <typename U, std::size_t OtherMax>
@@ -176,17 +235,44 @@ public:
 		Assert( other.size() < max_size() && size() < OtherMax, "Swap fails" );
 
 		auto min = std::min(other.size(), size());
-		swap_ranges(begin(other), begin(other) + min, begin());
+		swap_ranges(other.begin(), other.begin() + min, this->begin());
 
-		if (other.size()> size())
-			move(begin(other) + min, end(other), begin     ()+min);
-		else
-			move(begin     () + min, end     (), begin(other)+min);
+		if (other.size()> size()) move(other.begin() + min, other.end(), this->begin()+min);
+		else                      move(this->begin() + min, this->end(), other.begin()+min);
 
-		swap(_size, other._size);
+		Constainer::swap(_size, other._size);
 	}
 };
 
+template <typename T, std::size_t Size> constexpr auto begin(Vector<T, Size> const& a) {return a.begin();}
+template <typename T, std::size_t Size> constexpr auto   end(Vector<T, Size> const& a) {return a.  end();}
+template <typename T, std::size_t Size> constexpr auto begin(Vector<T, Size>      & a) {return a.begin();}
+template <typename T, std::size_t Size> constexpr auto   end(Vector<T, Size>      & a) {return a.  end();}
+
+template <typename T1, std::size_t Size1, typename T2, std::size_t Size2>
+constexpr bool operator==(Vector<T1, Size1> const& lhs, Vector<T2, Size2> const& rhs) {
+	return lhs.size() == rhs.size() && Constainer::equal(lhs.begin(), lhs.end(), rhs.begin());
+}
+template <typename T1, std::size_t Size1, typename T2, std::size_t Size2>
+constexpr bool operator!=(Vector<T1, Size1> const& lhs, Vector<T2, Size2> const& rhs) {
+	return !(lhs == rhs);
+}
+template <typename T1, std::size_t Size1, typename T2, std::size_t Size2>
+constexpr bool operator<(Vector<T1, Size1> const& lhs, Vector<T2, Size2> const& rhs) {
+	return Constainer::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+}
+template <typename T1, std::size_t Size1, typename T2, std::size_t Size2>
+constexpr bool operator>=(Vector<T1, Size1> const& lhs, Vector<T2, Size2> const& rhs) {
+	return !(lhs < rhs);
+}
+template <typename T1, std::size_t Size1, typename T2, std::size_t Size2>
+constexpr bool operator>(Vector<T1, Size1> const& lhs, Vector<T2, Size2> const& rhs) {
+	return rhs < lhs;
+}
+template <typename T1, std::size_t Size1, typename T2, std::size_t Size2>
+constexpr bool operator<=(Vector<T1, Size1> const& lhs, Vector<T2, Size2> const& rhs) {
+	return !(lhs > rhs);
+}
 }
 
 #endif // VECTOR_HXX_INCLUDED
