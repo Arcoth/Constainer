@@ -12,12 +12,22 @@
 
 namespace Constainer {
 
-template <typename T>
-constexpr void swap(T& a, T& b) {
-	T tmp = std::move(a);
-	a = std::move(b);
-	b = std::move(tmp);
+namespace detail {
+	template <typename T>
+	constexpr void swap(T& a, T& b, ...) {
+		T tmp = std::move(a);
+		a = std::move(b);
+		b = std::move(tmp);
+	}
+
+	template <typename T>
+	constexpr auto swap(T& a, T& b, int) -> decltype(a.swap(b)) {
+		a.swap(b);
+	}
 }
+
+template <typename T>
+constexpr void swap(T& a, T& b) {detail::swap(a,b,0);}
 
 template <typename InputIterator, typename T, typename Comp>
 constexpr auto find(InputIterator first, InputIterator last, T const& val, Comp comp) {
@@ -39,6 +49,14 @@ constexpr auto copy(InputIt first, InputIt last, OutputIt out) {
 	return out;
 }
 
+template <typename InputIt, typename SizeType, typename OutputIt>
+constexpr auto copy_n(InputIt first, SizeType count, OutputIt out) {
+	while (count-- != 0)
+		*out++ = *first++;
+
+	return out;
+}
+
 template <typename BiDir, typename BiDir2>
 constexpr auto copy_backward(BiDir  first, BiDir last, BiDir2 last2) {
 	while (last != first)
@@ -49,24 +67,33 @@ constexpr auto copy_backward(BiDir  first, BiDir last, BiDir2 last2) {
 
 template <typename BiDir, typename BiDir2>
 constexpr auto move_backward(BiDir first, BiDir last, BiDir2 last2) {
-	Constainer::copy_backward(make_move_iterator(first), make_move_iterator(last), last2);
+	return Constainer::copy_backward(make_move_iterator(first), make_move_iterator(last), last2);
 }
 
 template<class InputIt, class OutputIt>
 constexpr auto move(InputIt first, InputIt last, OutputIt out) {
-	Constainer::copy(make_move_iterator(first), make_move_iterator(last), out);
+	return Constainer::copy(make_move_iterator(first), make_move_iterator(last), out);
 }
 
-template <typename ForwardIt, typename T>
-constexpr void fill(ForwardIt first, ForwardIt last, T const& value) {
+template <typename InputIt, typename SizeType, typename OutputIt>
+constexpr auto move_n(InputIt first, SizeType count, OutputIt out) {
+	return Constainer::copy_n(make_move_iterator(first), count, out);
+}
+
+template <typename OutputIt, typename T>
+constexpr auto fill(OutputIt first, OutputIt last, T const& value) {
 	while (first != last)
 		*first++ = value;
+
+	return first;
 }
 
-template <typename ForwardIt, typename SizeType, typename T>
-constexpr void fill_n(ForwardIt first, SizeType count, T const& value) {
+template <typename OutputIt, typename SizeType, typename T>
+constexpr auto fill_n(OutputIt first, SizeType count, T const& value) {
 	for (SizeType i = 0; i++ < count;)
 		*first++ = value;
+
+	return first;
 }
 
 template <typename ForwardIt, typename ForwardIt2>

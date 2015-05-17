@@ -11,8 +11,8 @@
 #define CONSTAINER_AUTORET(...) -> decltype(__VA_ARGS__) {return __VA_ARGS__;}
 
 namespace Constainer {
-	namespace RA_detail {
-		namespace detail {
+	namespace exposed_detail {
+		namespace inner_detail {
 		template <int i> struct rank : rank<i+1> {};
 		template <> struct rank<10> {};
 
@@ -34,13 +34,13 @@ namespace Constainer {
 
 		template <typename T>
 		constexpr decltype(auto) begin(T&& t)
-		{return detail::_begin(detail::rank<0>(), std::forward<T>(t));}
+		{return inner_detail::_begin(inner_detail::rank<0>(), std::forward<T>(t));}
 		template <typename T>
 		constexpr decltype(auto) end  (T&& t)
-		{return detail::_end  (detail::rank<0>(), std::forward<T>(t));}
+		{return inner_detail::_end  (inner_detail::rank<0>(), std::forward<T>(t));}
 	}
 	// Prevents a recursive instantiation via ADL of Constainer::-members
-	using namespace RA_detail;
+	using namespace exposed_detail;
 
 	template <typename T>
 	constexpr auto rbegin(T& t) {return make_reverse_iterator(  end(t));}
