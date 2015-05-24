@@ -36,6 +36,9 @@ namespace Constainer {
 	template <typename I>
 	using isBidirectionalIterator = detail::hasIterCategoryConvTo<I, std::bidirectional_iterator_tag>;
 
+	template <typename I, typename T>
+	using hasValueType = std::is_same<typename std::iterator_traits<I>::value_type, T>;
+
 	/*template <typename I>
 	using isContiguousIterator = detail::hasIterCategoryConvTo<I, std::contiguous_iterator_tag>;*/
 }

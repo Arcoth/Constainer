@@ -24,6 +24,7 @@ struct DefaultCopyTraits {
 		return Constainer::copy_n(s2, n, s1);
 	}
 
+	/**< This function is called to actually 'move', not copy. */
 	static constexpr pointer move(pointer s1, const_pointer s2, std::size_t n) {
 		return Constainer::move_n(s2, n, s1);
 	}
@@ -32,16 +33,22 @@ struct DefaultCopyTraits {
 		return Constainer::fill_n(s, n, a);
 	}
 
+	/**< Called after erase has performed on elements in the container */
+	static constexpr void destroy(pointer, std::size_t) {}
+
 	template <typename U>
 	static constexpr void assign( reference r, U&& a ) {
 		r = std::forward<U>(a);
 	}
 };
 
+/**< This is the fundamental class template that provides a 'resizable array'.
+     Its interface is std::vector-like.
+     Note that the size of the underlying array is MaxN+1 because BasicString needs a null-terminator,
+     and this is the easiest and cheapest way of providing one. */
 template <typename T, std::size_t MaxN, typename CopyTraits>
-class BasicVector : private Array<T, MaxN> {
-
-	using _base = Array<T, MaxN>;
+class BasicVector : private Array<T, MaxN+1> {
+	using _base = Array<T, MaxN+1>;
 
 public:
 	using traits_type = CopyTraits;
@@ -61,20 +68,28 @@ private:
 	template <size_type OtherN>
 	using ThisResized = BasicVector<value_type, OtherN, traits_type>;
 
-	size_type _size = 0;
-
 protected:
+
+	size_type _size = 0;
 
 	constexpr auto _data() {return this->_storage;}
 
 	constexpr void _verifySize() const {
-		AssertExcept<std::bad_alloc>( size() <= MaxN );
+		AssertExcept<std::length_error>( size() <= MaxN, "Size check failed" );
 	}
-	constexpr void _sizeIncable(size_type s = 1) const {
-		AssertExcept<std::bad_alloc>( size() <= MaxN-s );
+	constexpr void _verifySizeInc(size_type s = 1) const {
+		AssertExcept<std::length_error>( size() <= MaxN-s, "Invalid attempt to increase container size" );
 	}
 	constexpr void _verifiedSizeInc(size_type c = 1) {
 		_size += c; _verifySize();
+	}
+
+	constexpr void _createInsertionSpace(const_iterator pos, size_type len) {
+		Assert(pos <= end());
+		_verifiedSizeInc(len);
+		if (pos != end()-len)
+			// TODO: Implement move_backward that uses CopyTraits::assign
+			Constainer::move_backward(_address(pos), end()-len, end());
 	}
 
 public:
@@ -126,7 +141,6 @@ public:
 	constexpr BasicVector(std::initializer_list<value_type> ilist)
 		: BasicVector(std::begin(ilist), std::end(ilist)) {}
 
-public:
 	template <std::size_t OtherN>
 	constexpr BasicVector& operator=( ThisResized<OtherN> const& other ) {
 		AssertExcept<std::bad_alloc>( other.size() <= max_size() );
@@ -158,8 +172,8 @@ public:
 	constexpr iterator                   end()       {return this->begin() + size();}
 	constexpr const_iterator             end() const {return this->begin() + size();}
 
-	constexpr       reference back ()       {return end()[-1];}
-	constexpr const_reference back () const {return end()[-1];}
+	constexpr       reference back()       {return end()[-1];}
+	constexpr const_reference back() const {return end()[-1];}
 
 	constexpr reference       operator[](size_type s) {
 		Assert(s < size(), "Invalid index!"); return _base::operator[](s);
@@ -176,11 +190,12 @@ public:
 private:
 	template <typename U>
 	constexpr void _push_back( U&& u ) {
-		_sizeIncable();
-		CopyTraits::assign(*this->end(), std::forward<U>(u));
+		_verifySizeInc();
+		traits_type::assign(*this->end(), std::forward<U>(u));
 		++_size;
 	}
 
+protected:
 	constexpr pointer _address(const_iterator i) {
 		static_assert( std::is_same<const_iterator, const_pointer>{},
 		               "Requires const_iterator = const_pointer" );
@@ -203,14 +218,15 @@ public:
 	}
 
 	constexpr void erase( const_iterator first, const_iterator last ) {
-		CopyTraits::move( _address(first), _address(last), end() - last);
+		traits_type::move( _address(first), _address(last), end() - last);
+		traits_type::destroy(end() - (last-first), last-first);
 		_size -= last-first;
 	}
 	constexpr void erase( const_iterator it ) {
 		erase(it, it+1);
 	}
 
-	constexpr void clear() {_size = 0;}
+	constexpr void clear() {erase(begin(), end());}
 
 private:
 	template <typename InputIt>
@@ -222,23 +238,16 @@ private:
 
 	template <typename ForwardIt>
 	constexpr iterator _insert( iterator pos, ForwardIt first, ForwardIt last, std::forward_iterator_tag ) {
-		auto size_increase = distance(first, last);
-		_sizeIncable(size_increase);
-		// TODO: Implement move_backward that uses CopyTraits::assign
-		move_backward( _remcv(pos), end(), end()+size_increase );
+		_createInsertionSpace(pos, distance(first, last));
 		copy( first, last, pos );
-		_size += size_increase;
 		return pos;
 	}
 
 	template <typename U>
 	constexpr iterator _insert( const_iterator pos, U&& u ) {
-		_sizeIncable();
 		auto it = _remcv(pos);
-		// TODO: Implement move_backward that uses CopyTraits::assign
-		move_backward( it, end(), end()+1 );
-		CopyTraits::assign(*it, std::forward<U>(u));
-		++_size;
+		_createInsertionSpace(it, 1);
+		traits_type::assign(*it, std::forward<U>(u));
 		return it;
 	}
 
@@ -259,12 +268,9 @@ public:
 	constexpr iterator insert( const_iterator pos, value_type const& v ) {return _insert(pos, v);}
 	constexpr iterator insert( const_iterator pos, value_type     && v ) {return _insert(pos, std::move(v));}
 
-	constexpr iterator insert( const_iterator pos, size_type c, value_type const& v ) {
-		_sizeIncable(c);
-		// TODO: Implement move_backward that uses CopyTraits::assign
-		move_backward( _remcv(pos), end(), end()+c );
-		traits_type::assign( _address(pos), c, v);
-		_size += c;
+	constexpr iterator insert( const_iterator pos, size_type c, const_reference v ) {
+		_createInsertionSpace(pos, c);
+		traits_type::assign(_remcv(pos), c, v);
 		return _remcv(pos);
 	}
 

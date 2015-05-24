@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include "Vector.hxx"
 
 using namespace Constainer;
