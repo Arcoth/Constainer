@@ -32,10 +32,10 @@ public:
 	using       iterator =       pointer;
 	using const_iterator = const_pointer;
 
-	using const_reverse_iterator = reverse_iterator<const_iterator>;
-	using       reverse_iterator = reverse_iterator<      iterator>;
+	using const_reverse_iterator = Constainer::reverse_iterator<const_iterator>;
+	using       reverse_iterator = Constainer::reverse_iterator<      iterator>;
 
-	T _storage[size()];
+	T _storage[std::max(size(), {1})];
 
 	constexpr pointer       data()       {return _storage;}
 	constexpr const_pointer data() const {return _storage;}

@@ -21,7 +21,7 @@ namespace detail {
 	}
 
 	template <typename T>
-	constexpr auto swap(T& a, T& b, int) -> decltype(void(a.swap(b))) {
+	constexpr auto swap(T& a, T& b, int) -> decltype(a.swap(b)) {
 		a.swap(b);
 	}
 }
@@ -38,7 +38,7 @@ constexpr auto find(InputIterator first, InputIterator last, T const& val, Comp 
 
 template <typename InputIterator, typename T>
 constexpr auto find(InputIterator first, InputIterator last, T const& val) {
-	return find(first, last, val, std::equal_to<>());
+	return Constainer::find(first, last, val, std::equal_to<>());
 }
 
 template <typename InputIt, typename OutputIt>
@@ -65,44 +65,48 @@ constexpr auto copy_backward(BiDir  first, BiDir last, BiDir2 last2) {
 	return last2;
 }
 
-template<class InputIt, class OutputIt>
-constexpr auto move(InputIt first, InputIt last, OutputIt out) {
-	return (copy)(make_move_iterator(first), make_move_iterator(last), out);
-}
-
-template<class InputIt, typename SizeType, class OutputIt>
-constexpr auto move_n(InputIt first, SizeType count, OutputIt out) {
-	return (copy_n)(make_move_iterator(first), count, out);
-}
-
 template <typename BiDir, typename BiDir2>
 constexpr auto move_backward(BiDir first, BiDir last, BiDir2 last2) {
-	return (copy_backward)(make_move_iterator(first), make_move_iterator(last), last2);
+	return Constainer::copy_backward(make_move_iterator(first), make_move_iterator(last), last2);
 }
 
-template <typename ForwardIt, typename T>
-constexpr void fill(ForwardIt first, ForwardIt last, T const& value) {
+template<class InputIt, class OutputIt>
+constexpr auto move(InputIt first, InputIt last, OutputIt out) {
+	return Constainer::copy(make_move_iterator(first), make_move_iterator(last), out);
+}
+
+template <typename InputIt, typename SizeType, typename OutputIt>
+constexpr auto move_n(InputIt first, SizeType count, OutputIt out) {
+	return Constainer::copy_n(make_move_iterator(first), count, out);
+}
+
+template <typename OutputIt, typename T>
+constexpr auto fill(OutputIt first, OutputIt last, T const& value) {
 	while (first != last)
 		*first++ = value;
+
+	return first;
 }
 
-template <typename ForwardIt, typename SizeType, typename T>
-constexpr void fill_n(ForwardIt first, SizeType count, T const& value) {
+template <typename OutputIt, typename SizeType, typename T>
+constexpr auto fill_n(OutputIt first, SizeType count, T const& value) {
 	for (SizeType i = 0; i++ < count;)
 		*first++ = value;
+
+	return first;
 }
 
 template <typename ForwardIt, typename ForwardIt2>
 constexpr auto swap_ranges(ForwardIt first, ForwardIt last, ForwardIt2 first2) {
 	while (first != last)
-		(swap)(*first++, *first2++);
+		swap(*first++, *first2++);
 
 	return first;
 }
 
 template <typename T, std::size_t N>
 constexpr void swap(T (&a)[N], T (&b)[N]) {
-	(swap_ranges)(a, a+N, b);
+	swap_ranges(a, a+N, b);
 }
 
 template <typename ForwardIterator, typename T>
@@ -131,10 +135,8 @@ constexpr T accumulate(InputIt first, InputIt last, T init, BinaryOp op)
 }
 
 template <typename InputIt, typename T>
-constexpr T accumulate(InputIt first, InputIt last, T init)
-{
-	// Prevent ADL
-	(accumulate)(first, last, init, std::plus<>());
+constexpr T accumulate(InputIt first, InputIt last, T init) {
+	Constainer::accumulate(first, last, init, std::plus<>());
 }
 
 template <typename InputIt1, typename InputIt2, typename Comp>
@@ -148,8 +150,7 @@ constexpr std::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1
 
 template <typename InputIt1, typename InputIt2, typename Comp>
 constexpr std::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1, InputIt2 first2) {
-	// Prevent ADL
-	return (mismatch)(first1, last1, first2, std::equal_to<>());
+	return Constainer::mismatch(first1, last1, first2, std::equal_to<>());
 }
 
 template <typename InputIt1, typename InputIt2, typename Comp>
@@ -167,8 +168,7 @@ constexpr std::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1
 template <typename InputIt1, typename InputIt2, typename Comp>
 constexpr std::pair<InputIt1, InputIt2> mismatch(InputIt1 first1, InputIt1 last1,
                                                  InputIt2 first2, InputIt2 last2) {
-	// Prevent ADL
-	return (mismatch)(first1, last1, first2, last2, std::equal_to<>());
+	return Constainer::mismatch(first1, last1, first2, last2, std::equal_to<>());
 }
 
 template <typename InputIt1, typename InputIt2, typename Compare>
@@ -186,30 +186,25 @@ constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1,
 template <typename InputIt1, typename InputIt2>
 constexpr bool lexicographical_compare(InputIt1 first1, InputIt1 last1,
                                        InputIt2 first2, InputIt2 last2) {
-	// Prevent ADL
-	return (lexicographical_compare)(first1, last1, first2, last2, std::less<>());
+	return Constainer::lexicographical_compare(first1, last1, first2, last2, std::less<>());
 }
 
 template <typename Input1, typename Input2, typename Comp>
 constexpr bool equal( Input1 first1, Input1 last1, Input2 first2, Comp comp ) {
-	// Prevent ADL
-	return (mismatch)(first1, last1, first2, comp).first == last1;
+	return Constainer::mismatch(first1, last1, first2, comp).first == last1;
 }
 template <typename Input1, typename Input2>
 constexpr bool equal( Input1 first1, Input1 last1, Input2 first2 ) {
-	// Prevent ADL
-	return (equal)(first1, last1, first2, std::equal_to<>());
+	return Constainer::equal(first1, last1, first2, std::equal_to<>());
 }
 template <typename Input1, typename Input2, typename Comp>
 constexpr bool equal( Input1 first1, Input1 last1, Input2 first2, Input2 last2, Comp comp ) {
-	// Prevent ADL
-	auto p = (mismatch)(first1, last1, first2, last2, comp);
+	auto p = Constainer::mismatch(first1, last1, first2, last2, comp);
 	return p.first == last1 && p.second == last2;
 }
 template <typename Input1, typename Input2>
 constexpr bool equal( Input1 first1, Input1 last1, Input2 first2, Input2 last2 ) {
-	// Prevent ADL
-	return (equal)(first1, last1, first2, last2, std::equal_to<>());
+	return Constainer::equal(first1, last1, first2, last2, std::equal_to<>());
 }
 
 }

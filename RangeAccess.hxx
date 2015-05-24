@@ -11,36 +11,36 @@
 #define CONSTAINER_AUTORET(...) -> decltype(__VA_ARGS__) {return __VA_ARGS__;}
 
 namespace Constainer {
-	namespace RA_detail {
-		namespace RankedOverloads {
-			template <int i> struct rank : rank<i+1> {};
-			template <> struct rank<10> {};
+	namespace exposed_detail {
+		namespace inner_detail {
+		template <int i> struct rank : rank<i+1> {};
+		template <> struct rank<10> {};
 
-			template <typename T>
-			constexpr auto _begin(rank<0>, T& t) CONSTAINER_AUTORET(begin(t))
-			template <typename T>
-			constexpr auto _end  (rank<0>, T& t) CONSTAINER_AUTORET(  end(t))
+		template <typename T>
+		constexpr auto _begin(rank<0>, T& t) CONSTAINER_AUTORET(begin(t))
+		template <typename T>
+		constexpr auto _end  (rank<0>, T& t) CONSTAINER_AUTORET(  end(t))
 
-			template <typename T>
-			constexpr auto _begin(rank<1>, T& t) CONSTAINER_AUTORET(t.begin())
-			template <typename T>
-			constexpr auto _end  (rank<1>, T& t) CONSTAINER_AUTORET(t.  end())
+		template <typename T>
+		constexpr auto _begin(rank<1>, T& t) CONSTAINER_AUTORET(t.begin())
+		template <typename T>
+		constexpr auto _end  (rank<1>, T& t) CONSTAINER_AUTORET(t.  end())
 
-			template <typename T, std::size_t N>
-			constexpr auto _begin(rank<2>, T(&t)[N]) CONSTAINER_AUTORET(&*t)
-			template <typename T, std::size_t N>
-			constexpr auto _end  (rank<2>, T(&t)[N]) CONSTAINER_AUTORET(t+N)
+		template <typename T, std::size_t N>
+		constexpr auto _begin(rank<2>, T(&t)[N]) CONSTAINER_AUTORET(&*t)
+		template <typename T, std::size_t N>
+		constexpr auto _end  (rank<2>, T(&t)[N]) CONSTAINER_AUTORET(t+N)
 		}
 
 		template <typename T>
 		constexpr decltype(auto) begin(T&& t)
-		{return RankedOverloads::_begin(RankedOverloads::rank<0>(), std::forward<T>(t));}
+		{return inner_detail::_begin(inner_detail::rank<0>(), std::forward<T>(t));}
 		template <typename T>
 		constexpr decltype(auto) end  (T&& t)
-		{return RankedOverloads::_end  (RankedOverloads::rank<0>(), std::forward<T>(t));}
+		{return inner_detail::_end  (inner_detail::rank<0>(), std::forward<T>(t));}
 	}
 	// Prevents a recursive instantiation via ADL of Constainer::-members
-	using namespace RA_detail;
+	using namespace exposed_detail;
 
 	template <typename T>
 	constexpr auto rbegin(T& t) {return make_reverse_iterator(  end(t));}
@@ -67,6 +67,12 @@ namespace Constainer {
 	constexpr decltype(auto) decayed_begin(T& t) { return begin(t); }
 	template <typename T>
 	constexpr decltype(auto) decayed_end  (T& t) { return   end(t); }
+
+	template <typename T>
+	constexpr auto size(T& t) -> decltype(t.size()) {return t.size();}
+
+	template <typename T, std::size_t N>
+	constexpr std::size_t size(T (&t)[N]) {return N;}
 }
 
 #undef CONSTAINER_AUTORET
