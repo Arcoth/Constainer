@@ -788,6 +788,22 @@ constexpr bool operator>=( const BasicString<CharT,N,Traits>& lhs, const CharT* 
 	return !(lhs < rhs);
 }
 
+/** \brief The standard string hash function used by this library.
+ *         It currently works for size_t having size 4 and 8.
+ *
+ * \param str The string to hash. Is not required to be null-terminated.
+ * \param len The length of that string.
+ * \return The hash value as computed by the FNV-1 hash function.
+ *
+ */
+
+constexpr std::size_t hash(const char* str, std::size_t len) {
+	const std::size_t prime = sizeof(std::size_t) == 8? 0x00000100000001b3 : 0x1000193;
+	      std::size_t h     = sizeof(std::size_t) == 8? 0xcbf29ce484222325 : 0x811C9DC5;
+	while (len--)
+		h = (h ^ *str++) * prime;
+	return h;
+}
 
 }
 
