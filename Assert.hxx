@@ -8,6 +8,7 @@
 #include <stdexcept>
 
 #include <cstdlib>
+#include <cassert>
 
 namespace Constainer {
 
@@ -19,10 +20,10 @@ constexpr void AssertExcept(bool b, Args&&... args) {
 	if (!b) throw Except(std::forward<Args>(args)...);
 }
 
-/*! If you're getting an error message about std::abort not being usable in a constant expression here,
-    go back one step in the call stack for this error and check the message */
+/*! If you're getting an error message about … not being usable in a constant expression here,
+    go back in the call stack for this error and check message and context */
 constexpr void Assert(bool b, char const* = nullptr) {
-	if (!b) std::abort();
+	assert(b); //! LWG 2234
 }
 
 }

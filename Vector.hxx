@@ -45,7 +45,7 @@ struct DefaultCopyTraits {
 /**< This is the fundamental class template that provides a 'resizable array'.
      Its interface is std::vector-like.
      Note that the size of the underlying array is MaxN+1 because BasicString needs a null-terminator,
-     and this is the easiest and cheapest way of providing one. */
+     and this is the easiest and cheapest way of providing one without breaking bounds consistence. */
 template <typename T, std::size_t MaxN, typename CopyTraits>
 class BasicVector : private Array<T, MaxN+1> {
 	using _base = Array<T, MaxN+1>;
@@ -74,14 +74,11 @@ protected:
 
 	constexpr auto _data() {return this->_storage;}
 
-	constexpr void _verifySize() const {
-		AssertExcept<std::length_error>( size() <= MaxN, "Size check failed" );
-	}
 	constexpr void _verifySizeInc(size_type s = 1) const {
 		AssertExcept<std::length_error>( size() <= MaxN-s, "Invalid attempt to increase container size" );
 	}
 	constexpr void _verifiedSizeInc(size_type c = 1) {
-		_size += c; _verifySize();
+		_verifySizeInc(c); _size += c;
 	}
 
 	constexpr void _createInsertionSpace(const_iterator pos, size_type len) {
@@ -107,7 +104,9 @@ public:
 
 	constexpr BasicVector() :_base{},  _size(0) {}
 
-	constexpr BasicVector( size_type s ) : _base{}, _size(s) {_verifySize();}
+	constexpr BasicVector( size_type s ) : _base{}, _size(s) {
+		_verifySizeInc(0); // Test size
+	}
 
 	constexpr BasicVector( size_type s, value_type const& v ) : BasicVector(0) {
 		insert(begin(), s, v);
@@ -126,7 +125,9 @@ private:
 
 	template <std::size_t OtherN>
 	constexpr BasicVector(ThisResized<OtherN>     && other, int)
-		: BasicVector(make_move_iterator(other.begin()), make_move_iterator(other.end())) {}
+		: BasicVector(make_move_iterator(other.begin()), make_move_iterator(other.end())) {
+		other.clear();
+	}
 
 public:
 
@@ -321,6 +322,19 @@ public:
 		swap_ranges(other.begin(), other.begin() + min, begin());
 		_swap_trailing_elems(other, min);
 		Constainer::swap(_size, other._size);
+	}
+
+	constexpr void resize(size_type n) {
+		if (n < size())
+			erase(begin()+n, end());
+		else if (n > size())
+			_verifiedSizeInc(n-size());
+	}
+	constexpr void resize(size_type n, const_reference value) {
+		if (n < size())
+			erase(begin()+n, end());
+		else if (n > size())
+			insert(end(), n-size(), value);
 	}
 };
 

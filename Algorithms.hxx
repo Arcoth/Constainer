@@ -207,6 +207,69 @@ constexpr bool equal( Input1 first1, Input1 last1, Input2 first2, Input2 last2 )
 	return Constainer::equal(first1, last1, first2, last2, std::equal_to<>());
 }
 
+template <typename ForwardIt1, typename ForwardIt2, typename BinaryPredicate>
+constexpr ForwardIt1 search(ForwardIt1 first, ForwardIt1 last,
+                            ForwardIt2 s_first, ForwardIt2 s_last,
+                            BinaryPredicate pred) {
+	for (;;++first) {
+		auto it   = first;
+		auto s_it = s_first;
+		for (;;) {
+			if (s_it == s_last)
+				return first;
+			if (it == last)
+				return last;
+			if (!pred(*it, *s_it))
+				break;
+			++it; ++s_it;
+		}
+	}
+}
+
+template <typename ForwardIt1, typename ForwardIt2, typename BinaryPredicate>
+constexpr ForwardIt1 search(ForwardIt1 f, ForwardIt1 l,
+                            ForwardIt2 sf, ForwardIt2 sl) {
+	return search(f, l, sf, sl, std::equal_to<>());
+}
+
+template <typename InputIt, typename ForwardIt, typename BinaryPredicate>
+constexpr InputIt find_first_of(InputIt first, InputIt last,
+                                ForwardIt s_first, ForwardIt s_last,
+                                BinaryPredicate pred) {
+	for (; first != last; ++first)
+		for (auto it = s_first; it != s_last; ++it)
+			if (pred(*first, *it))
+				return first;
+
+	return last;
+}
+template <typename InputIt, typename ForwardIt, typename BinaryPredicate>
+constexpr InputIt find_first_of(InputIt f, InputIt l,
+                                ForwardIt sf, ForwardIt sl) {
+	return find_first_of(f, l, sf, sl, std::equal_to<>());
+}
+
+
+template <typename InputIt, typename ForwardIt, typename BinaryPredicate>
+constexpr InputIt find_first_not_of(InputIt first, InputIt last,
+                                    ForwardIt s_first, ForwardIt s_last,
+                                    BinaryPredicate pred) {
+	for (; first != last; ++first) {
+		auto it = s_first;
+		for (; it != s_last; ++it)
+			if (pred(*first, *it))
+				break;
+		if (it == s_last)
+			return first;
+	}
+	return last;
+}
+
+template <typename InputIt, typename ForwardIt, typename BinaryPredicate>
+constexpr InputIt find_first_not_of(InputIt f, InputIt l,
+                                    ForwardIt sf, ForwardIt sl) {
+	return find_first_of(f, l, sf, sl, std::equal_to<>());
+}
 }
 
 #endif

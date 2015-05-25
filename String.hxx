@@ -79,6 +79,28 @@ public:
 	}
 };
 
+constexpr bool isspace(int i) {
+	using _traits = CharTraits<char>;
+	if (_traits::eq(i, _traits::eof()))
+		return false;
+	auto ch = _traits::to_char_type(i);
+	return ch == ' '  || ch == '\f' || ch == '\n'
+	    || ch == '\t' || ch == '\r' || ch == '\v';
+}
+
+constexpr int toupper(int i) {
+	using _traits = CharTraits<char>;
+	if (_traits::eq(i, _traits::eof()))
+		return i;
+	auto ch = _traits::to_char_type(i);
+	char const lower[] = "abcdefghijklmnopqrstuvwxyz";
+	char const upper[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	if (auto p = _traits::find(lower, 26, ch))
+		return upper[p-lower];
+	return i;
+}
+
+
 template <typename Char, std::size_t MaxN, typename Traits=CharTraits<Char>>
 class BasicString : protected BasicVector<Char, MaxN, Traits> {
 
@@ -114,9 +136,8 @@ private:
 
 public:
 
-	using _base::_base;
-	//using _base::insert;
 	using _base::erase;
+
 	using _base::begin;
 	using _base::end;
 	using _base::rbegin;
@@ -125,15 +146,16 @@ public:
 	using _base::cend;
 	using _base::crbegin;
 	using _base::crend;
-	using _base::size;
+
 	using _base::assign;
 	using _base::back;
-	using _base::front;
 	using _base::clear;
 	using _base::empty;
-	using _base::pop_back;
-	using _base::push_back;
+	using _base::front;
+	using _base::max_size;
 	using _base::operator[];
+	using _base::pop_back;
+	using _base::size;
 
 	constexpr auto length() const {return size();}
 
@@ -149,8 +171,27 @@ public:
 		traits_type::copy(_base::data(), str, s);
 	}
 	constexpr BasicString(const_pointer str) {
-		assign(str);
+		insert(0, str);
 	}
+
+	constexpr BasicString(BasicString&&) = default;
+	constexpr BasicString(BasicString const&) = default;
+
+	constexpr BasicString() = default;
+	constexpr BasicString(std::initializer_list<value_type> ilist) :
+		_base(ilist) {}
+	template <typename InputIt>
+	constexpr BasicString(InputIt first, InputIt last) : _base(first, last) {}
+
+	constexpr BasicString& operator=(BasicString const&) = default;
+	constexpr BasicString& operator=(BasicString&&) = default;
+	constexpr BasicString& operator=(const_pointer p) {return assign(p);}
+	constexpr BasicString& operator=(value_type c) {return assign(1, c);}
+	constexpr BasicString& operator=(std::initializer_list<value_type> ilist) {
+		return assign(ilist);
+	}
+
+	/**< --------- @ASSIGN ---------*/
 
 	constexpr BasicString& assign( const_pointer str, size_type count ) {
 		this->clear();
@@ -160,11 +201,26 @@ public:
 	constexpr BasicString& assign( const_pointer str ) {
 		return assign(str, traits_type::length(str));
 	}
+	constexpr BasicString& assign( std::initializer_list<value_type> ilist ) {
+		_base::assign(ilist);
+		return *this;
+	}
+	constexpr BasicString& assign( size_type count, value_type value ) {
+		_base::assign(count, value);
+		return *this;
+	}
+	template <class InputIt>
+	constexpr auto assign(InputIt first, InputIt last)
+		-> requires<isInputIterator<InputIt>, BasicString&> {
+		_base::assign(first, last);
+		return *this;
+	}
 	template <std::size_t N>
 	constexpr BasicString& assign( ThisResized<N> const& other,
 	                               size_type pos, size_type count = npos ) {
 		return assign(other.data()+pos, std::min(count, size()-pos));
 	}
+	/**< --------- @INSERT ---------*/
 
 	constexpr BasicString& insert( const_iterator it, Char ch ) {
 		_base::insert(it, ch);
@@ -206,6 +262,8 @@ public:
 		return *this;
 	}
 
+	/**< --------- @APPEND ---------*/
+
 	constexpr BasicString& append( size_type count, value_type ch ) {
 		insert( size(), count, ch );
 		return *this;
@@ -236,6 +294,8 @@ public:
 	constexpr BasicString& append( std::initializer_list<value_type> ilist ) {
 		return append(std::begin(ilist), std::end(ilist));
 	}
+
+	/**< --------- @OPERATOR+= ---------*/
 
 	constexpr BasicString& operator+=( Char ch )                {return append(1, ch);}
 	template <std::size_t OtherN>
@@ -291,6 +351,7 @@ public:
 	}
 
 	/**< --------- @REPLACE ---------*/
+
 	constexpr BasicString& replace( size_type pos, size_type count,
                                       const_pointer str, size_type count2 ) {
 		if (count < count2)
@@ -380,7 +441,7 @@ public:
 
 	constexpr BasicString& replace( const_iterator first, const_iterator last,
 	                                size_type count2, value_type ch ) {
-		auto count = last-first;
+		size_type count = last-first;
 		if (count < count2)
 			this->_createInsertionSpace(last, count2-count);
 		else if (count2 < count)
@@ -388,6 +449,160 @@ public:
 		traits_type::assign(this->_address(first), count2, ch);
 		return *this;
 	}
+
+	constexpr BasicString substr(size_type pos, size_type count=npos) const {
+		AssertExcept<std::out_of_range>(pos <= size(), "Invalid start position of substr");
+		return BasicString(data()+pos, std::min(count, size()-pos));
+	}
+
+	constexpr size_type copy( pointer dest, size_type count, size_type pos = 0) const {
+		AssertExcept<std::out_of_range>(pos < size(), "Invalid start position of copy");
+		return traits_type::copy(dest, data()+pos, std::min(count, size()-pos)) - dest;
+	}
+
+	void resize(size_type n) {_base::resize(n);}
+	void resize(size_type n, value_type c) {_base::resize(n, c);}
+
+	void push_back(value_type c) {_base::push_back(c);}
+
+	template <std::size_t OtherMax>
+	constexpr void swap( ThisResized<OtherMax>& other ) {
+		_base::swap(other);
+	}
+
+	/**< --------- @FIND ---------*/
+
+	//! TODO: Implement Boyer-Moore.
+	constexpr size_type find(const_pointer str, size_type pos, size_type count) const {
+		if (pos < size()) {
+			auto it = Constainer::search(begin()+pos, end(), str, str+count,
+			                             traits_type::eq);
+			if (it != end())
+				return it-begin();
+		}
+		return npos;
+	}
+	constexpr size_type find(const_pointer str, size_type pos=0) const {
+		return find(str, pos, traits_type::length(str));
+	}
+	constexpr size_type find(value_type ch, size_type pos=0) const {
+		if (pos < size())
+			if (auto p = traits_type::find(data()+pos, size()-pos, ch))
+				return p-data();
+
+		return npos;
+	}
+	template <std::size_t OtherMax>
+	constexpr size_type find(ThisResized<OtherMax> const& other, size_type pos = 0) const {
+		return find(other.data(), pos, other.size());
+	}
+
+	/**< --------- @RFIND ---------*/
+
+	constexpr size_type rfind(const_pointer str, size_type pos, size_type count) const {
+		if (count == 0)
+			return std::min(size(), pos);
+		if (!empty()) {
+			pos = std::min(pos, size()-1);
+			auto it = Constainer::search(rbegin()+(size()-pos-1), rend(),
+			                             Constainer::make_reverse_iterator(str+count),
+			                             Constainer::make_reverse_iterator(str),
+			                             traits_type::eq);
+			if (it != rend())
+				return it.base()-begin()-count;
+		}
+		return npos;
+	}
+	constexpr size_type rfind(const_pointer str, size_type pos=npos) const {
+		return rfind(str, pos, traits_type::length(str));
+	}
+	constexpr size_type rfind(value_type ch, size_type pos=npos) const {
+		return rfind(&ch, pos, 1);
+	}
+	template <std::size_t OtherMax>
+	constexpr size_type rfind(ThisResized<OtherMax> const& other, size_type pos = npos) const {
+		return rfind(other.data(), pos, other.size());
+	}
+
+	/**< --------- @FIND_FIRST_OF ---------*/
+
+	constexpr size_type find_first_of(const_pointer str, size_type pos, size_type count) const {
+		auto it = Constainer::find_first_of(begin()+pos, end(), str, str+count, traits_type::eq);
+		if (it == end())
+			return npos;
+		return it-begin();
+	}
+	constexpr size_type find_first_of(const_pointer str, size_type pos=0) const {
+		return find_first_of(str, pos, traits_type::length(str));
+	}
+	constexpr size_type find_first_of(value_type ch, size_type pos=0) const {
+		return find(ch, pos);
+	}
+	template <std::size_t OtherMax>
+	constexpr size_type find_first_of(ThisResized<OtherMax> const& other, size_type pos = 0) const {
+		return find_first_of(other.data(), pos, other.size());
+	}
+
+	/**< --------- @FIND_FIRST_NOT_OF ---------*/
+
+	constexpr size_type find_first_not_of(const_pointer str, size_type pos, size_type count) const {
+		auto it = Constainer::find_first_not_of(begin()+pos, end(), str, str+count, traits_type::eq);
+		if (it == end())
+			return npos;
+		return it-begin();
+	}
+	constexpr size_type find_first_not_of(const_pointer str, size_type pos=0) const {
+		return find_first_not_of(str, pos, traits_type::length(str));
+	}
+	constexpr size_type find_first_not_of(value_type ch, size_type pos=0) const {
+		//! TODO: Implement std::not1 and implement using find_if with not1(traits::eq)
+		return find_first_not_of(&ch, pos, 1);
+	}
+	template <std::size_t OtherMax>
+	constexpr size_type find_first_not_of(ThisResized<OtherMax> const& other, size_type pos = 0) const {
+		return find_first_not_of(other.data(), pos, other.size());
+	}
+
+	/**< --------- @FIND_LAST_OF ---------*/
+
+	constexpr size_type find_last_of(const_pointer str, size_type pos, size_type count) const {
+		pos = std::min(pos, size()-1);
+		auto it = Constainer::find_first_of(rbegin()+(size()-pos-1), rend(), str, str+count, traits_type::eq);
+		if (it.base() == begin())
+			return npos;
+		return it.base()-1-begin();
+	}
+	constexpr size_type find_last_of(const_pointer str, size_type pos=npos) const {
+		return find_last_of(str, pos, traits_type::length(str));
+	}
+	constexpr size_type find_last_of(value_type ch, size_type pos=npos) const {
+		return rfind(ch, pos);
+	}
+	template <std::size_t OtherMax>
+	constexpr size_type find_last_of(ThisResized<OtherMax> const& other, size_type pos = npos) const {
+		return find_last_of(other.data(), pos, other.size());
+	}
+
+	/**< --------- @FIND_LAST_NOT_OF ---------*/
+
+	constexpr size_type find_last_not_of(const_pointer str, size_type pos, size_type count) const {
+		pos = std::min(pos, size()-1);
+		auto it = Constainer::find_first_not_of(rbegin()+(size()-pos-1), rend(), str, str+count, traits_type::eq);
+		if (it.base() == begin())
+			return npos;
+		return it.base()-1-begin();
+	}
+	constexpr size_type find_last_not_of(const_pointer str, size_type pos=npos) const {
+		return find_last_not_of(str, pos, traits_type::length(str));
+	}
+	constexpr size_type find_last_not_of(value_type ch, size_type pos=npos) const {
+		return find_last_not_of(&ch, pos, 1);
+	}
+	template <std::size_t OtherMax>
+	constexpr size_type find_last_not_of(ThisResized<OtherMax> const& other, size_type pos = npos) const {
+		return find_last_of(other.data(), pos, other.size());
+	}
+
 };
 
 #include <ostream>
@@ -566,6 +781,68 @@ constexpr bool operator>=( const CharT* lhs, const BasicString<CharT,N,Traits>& 
 template <typename CharT, std::size_t N, typename Traits>
 constexpr bool operator>=( const BasicString<CharT,N,Traits>& lhs, const CharT* rhs ) {
 	return !(lhs < rhs);
+}
+
+template <typename Int, std::size_t N>
+constexpr Int sToInt( BasicString<char, N> const& str, std::size_t* pos = 0, int base = 10 ) {
+	auto const& digits = BasicString<char, 36>("0123456789"
+	                                           "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+
+	auto p = str.find_first_not_of(" \f\n\t\r\v");
+	AssertExcept<std::invalid_argument>(p != str.npos, "Quasi-empty string");
+
+	std::make_signed_t<Int> sign = 1;
+	if (str[p] == '-') {
+		sign = -1;
+		++p;
+	}
+	else if (str[p] == '+')
+		++p;
+
+	if (base == 0) {
+		AssertExcept<std::invalid_argument>(p < str.size(), "No integer could be extracted");
+		auto suffix_1 = str[p++];
+		if (suffix_1 != '0')
+			base = 10;
+		else {
+			AssertExcept<std::invalid_argument>(p < str.size(), "No integer could be extracted");
+			auto suffix_2 = str[p];
+			if (suffix_2 == 'X' || suffix_2 == 'x') {
+				base = 16;
+				++p;
+			}
+			else
+				base = 8;
+		}
+	}
+
+	Int res = 0;
+	bool written = false;
+	decltype(p) found=0;
+	while (p != str.size()
+	   && (found = digits.find(toupper(str[p]))) != digits.npos) {
+		const auto summand = sign*Int(found);
+
+		// Overflow check. Separate because of two's complement.
+		if (sign ==  1)
+			AssertExcept<std::out_of_range>(res <= std::numeric_limits<Int>::max()/base
+			                        && res*base <= std::numeric_limits<Int>::max()-summand,
+			                          "Integer too large to store");
+		if (sign == -1)
+			AssertExcept<std::out_of_range>(res >= std::numeric_limits<Int>::min()/base
+			                        && res*base >= std::numeric_limits<Int>::min()-summand,
+			                          "Integer too large to store");
+
+		(res *= base) += summand;
+
+		written=true;
+		++p;
+	}
+	AssertExcept<std::invalid_argument>(written, "No integer could be extracted");
+
+	if (pos) *pos = p;
+
+	return res;
 }
 
 }

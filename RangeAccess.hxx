@@ -72,7 +72,7 @@ namespace Constainer {
 	constexpr auto size(T& t) -> decltype(t.size()) {return t.size();}
 
 	template <typename T, std::size_t N>
-	constexpr std::size_t size(T (&t)[N]) {return N;}
+	constexpr std::size_t size(T (&)[N]) {return N;}
 }
 
 #undef CONSTAINER_AUTORET
