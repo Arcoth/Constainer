@@ -42,13 +42,11 @@ struct DefaultCopyTraits {
 	}
 };
 
-/**< This is the fundamental class template that provides a 'resizable array'.
-     Its interface is std::vector-like.
-     Note that the size of the underlying array is MaxN+1 because BasicString needs a null-terminator,
-     and this is the easiest and cheapest way of providing one without breaking bounds consistence. */
-template <typename T, std::size_t MaxN, typename CopyTraits>
-class BasicVector : private Array<T, MaxN+1> {
-	using _base = Array<T, MaxN+1>;
+namespace detail{
+
+template <typename T, std::size_t MaxN, typename CopyTraits, std::size_t addBufferSize>
+class BasicVector : private Array<T, MaxN+addBufferSize> {
+	using _base = Array<T, MaxN+addBufferSize>;
 
 public:
 	using traits_type = CopyTraits;
@@ -66,7 +64,7 @@ public:
 
 private:
 	template <size_type OtherN>
-	using ThisResized = BasicVector<value_type, OtherN, traits_type>;
+	using ThisResized = BasicVector<value_type, OtherN, traits_type, addBufferSize>;
 
 protected:
 
@@ -299,22 +297,22 @@ public:
 	constexpr void pop_back() {Assert(not empty(), "Can't pop"); erase(end()-1);}
 
 private:
-	template <std::size_t OtherMax, typename OtherTraits>
-	constexpr void _swap_trailing_elems( BasicVector<value_type, OtherMax, OtherTraits>& other, size_type len ) {
+	template <std::size_t OtherMax, typename OtherTraits, std::size_t addBuffOther>
+	constexpr void _swap_trailing_elems( BasicVector<value_type, OtherMax, OtherTraits, addBuffOther>& other, size_type len ) {
 		// Use the trait of the destination string
 		if (other.size()> size()) CopyTraits::move(_address(begin()+len), _address(other.begin() + len), distance(other.begin() + len, other.end()));
 		else                     OtherTraits::move(_address(other.begin()+len),_address(begin()+len), distance(begin() + len, end()));
 	}
-	template <typename U, std::size_t OtherMax, typename OtherTraits>
-	constexpr void _swap_trailing_elems( BasicVector<U, OtherMax, OtherTraits>& other, size_type len ) {
+	template <typename U, std::size_t OtherMax, typename OtherTraits, std::size_t addBuffOther>
+	constexpr void _swap_trailing_elems( BasicVector<U, OtherMax, OtherTraits, addBuffOther>& other, size_type len ) {
 		if (other.size()> size()) move(other.begin() + len, other.end(), begin()+len);
 		else                      move(begin() + len, end(), other.begin()+len);
 	}
 
 public:
 
-	template <typename U, std::size_t OtherMax, typename OtherTraits>
-	constexpr void swap( BasicVector<U, OtherMax, OtherTraits>& other ) {
+	template <typename U, std::size_t OtherMax, typename OtherTraits, std::size_t addBuffOther>
+	constexpr void swap( BasicVector<U, OtherMax, OtherTraits, addBuffOther>& other ) {
 		Assert( other.size() < max_size() && size() < OtherMax, "Swap fails" );
 
 		auto min = std::min(other.size(), size());
@@ -336,6 +334,14 @@ public:
 		else if (n > size())
 			insert(end(), n-size(), value);
 	}
+};
+
+}
+/**< This is the fundamental class template that provides a 'resizable array'.
+     Its interface is std::vector-like. */
+template <typename T, std::size_t MaxN, typename CopyTraits>
+class BasicVector : public detail::BasicVector<T, MaxN, CopyTraits, 0> {
+	using detail::BasicVector<T, MaxN, CopyTraits, 0>::BasicVector;
 };
 
 template <typename T, std::size_t Size, typename Traits>

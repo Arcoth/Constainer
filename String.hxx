@@ -102,9 +102,9 @@ constexpr int toupper(int i) {
 
 
 template <typename Char, std::size_t MaxN, typename Traits=CharTraits<Char>>
-class BasicString : protected BasicVector<Char, MaxN, Traits> {
+class BasicString : protected detail::BasicVector<Char, MaxN, Traits, 1> {
 
-	using _base = BasicVector<Char, MaxN, Traits>;
+	using _base = detail::BasicVector<Char, MaxN, Traits, 1>;
 
 protected:
 
