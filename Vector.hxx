@@ -72,10 +72,10 @@ protected:
 
 	constexpr auto _data() {return this->_storage;}
 
-	constexpr void _verifySizeInc(size_type s = 1) const {
+	constexpr void _verifySizeInc(size_type s) const {
 		AssertExcept<std::length_error>( size() <= MaxN-s, "Invalid attempt to increase container size" );
 	}
-	constexpr void _verifiedSizeInc(size_type c = 1) {
+	constexpr void _verifiedSizeInc(size_type c) {
 		_verifySizeInc(c); _size += c;
 	}
 
@@ -103,7 +103,7 @@ public:
 	constexpr BasicVector() :_base{},  _size(0) {}
 
 	constexpr BasicVector( size_type s ) : _base{}, _size(s) {
-		_verifySizeInc(0); // Test size
+		_verifySizeInc(0); // The INCREASE is 0, not the size to test!
 	}
 
 	constexpr BasicVector( size_type s, value_type const& v ) : BasicVector(0) {
@@ -117,13 +117,20 @@ public:
 	}
 
 private:
-	template <std::size_t OtherN>
-	constexpr BasicVector(ThisResized<OtherN> const& other, int)
-		: BasicVector(other.begin(), other.end()) {}
+	constexpr BasicVector(const_pointer p, size_type l, std::false_type) : BasicVector(l) {
+		traits_type::copy(_data(), p, l);
+	}
+	constexpr BasicVector(const_pointer p, size_type l, std::true_type) : BasicVector(l) {
+		traits_type::move(_data(), p, l);
+	}
 
 	template <std::size_t OtherN>
-	constexpr BasicVector(ThisResized<OtherN>     && other, int)
-		: BasicVector(make_move_iterator(other.begin()), make_move_iterator(other.end())) {
+	constexpr BasicVector(ThisResized<OtherN> const& other, int) :
+		BasicVector(other.data(), other.size(), std::false_type()) {}
+
+	template <std::size_t OtherN>
+	constexpr BasicVector(ThisResized<OtherN> && other, int) :
+		BasicVector(other.data(), other.size(), std::true_type())  {
 		other.clear();
 	}
 
@@ -189,7 +196,7 @@ public:
 private:
 	template <typename U>
 	constexpr void _push_back( U&& u ) {
-		_verifySizeInc();
+		_verifySizeInc(1);
 		traits_type::assign(*this->end(), std::forward<U>(u));
 		++_size;
 	}
@@ -337,6 +344,7 @@ public:
 };
 
 }
+
 /**< This is the fundamental class template that provides a 'resizable array'.
      Its interface is std::vector-like. */
 template <typename T, std::size_t MaxN, typename CopyTraits>

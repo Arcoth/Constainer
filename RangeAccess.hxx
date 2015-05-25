@@ -8,8 +8,6 @@
 #include <cstddef>
 #include <iterator>
 
-#define CONSTAINER_AUTORET(...) -> decltype(__VA_ARGS__) {return __VA_ARGS__;}
-
 namespace Constainer {
 	namespace exposed_detail {
 		namespace inner_detail {
@@ -17,19 +15,19 @@ namespace Constainer {
 		template <> struct rank<10> {};
 
 		template <typename T>
-		constexpr auto _begin(rank<0>, T& t) CONSTAINER_AUTORET(begin(t))
+		constexpr auto _begin(rank<0>, T& t) -> decltype(begin(t)) {return begin(t);}
 		template <typename T>
-		constexpr auto _end  (rank<0>, T& t) CONSTAINER_AUTORET(  end(t))
+		constexpr auto _end  (rank<0>, T& t) -> decltype(begin(t)) {return   end(t);}
 
 		template <typename T>
-		constexpr auto _begin(rank<1>, T& t) CONSTAINER_AUTORET(t.begin())
+		constexpr auto _begin(rank<1>, T& t) -> decltype(t.begin()) {return t.begin();}
 		template <typename T>
-		constexpr auto _end  (rank<1>, T& t) CONSTAINER_AUTORET(t.  end())
+		constexpr auto _end  (rank<1>, T& t) -> decltype(t.  end()) {return t.  end();}
 
 		template <typename T, std::size_t N>
-		constexpr auto _begin(rank<2>, T(&t)[N]) CONSTAINER_AUTORET(&*t)
+		constexpr auto _begin(rank<2>, T(&t)[N]) {return t;}
 		template <typename T, std::size_t N>
-		constexpr auto _end  (rank<2>, T(&t)[N]) CONSTAINER_AUTORET(t+N)
+		constexpr auto _end  (rank<2>, T(&t)[N]) {return t+N;}
 		}
 
 		template <typename T>
@@ -74,7 +72,5 @@ namespace Constainer {
 	template <typename T, std::size_t N>
 	constexpr std::size_t size(T (&)[N]) {return N;}
 }
-
-#undef CONSTAINER_AUTORET
 
 #endif // RANGEACCESS_HXX_INCLUDED

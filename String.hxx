@@ -88,6 +88,11 @@ constexpr bool isspace(int i) {
 	    || ch == '\t' || ch == '\r' || ch == '\v';
 }
 
+constexpr char const* skipSpaces(char const* str) {
+	while (*str && isspace(*str)) ++str;
+	return str;
+}
+
 constexpr int toupper(int i) {
 	using _traits = CharTraits<char>;
 	if (_traits::eq(i, _traits::eof()))
@@ -164,14 +169,13 @@ public:
 
 	template <size_type OtherN>
 	constexpr BasicString(ThisResized<OtherN> const& str, size_type pos, size_type count=npos) :
-		_base(str.begin()+pos, str.begin()+pos+count) {}
+		BasicString(str.data()+pos, std::min(str.size()-pos, count)) {}
 
 	constexpr BasicString(const_pointer str, size_type s) {
-		this->_verifiedSizeInc(s);
-		traits_type::copy(_base::data(), str, s);
+		append(str, s);
 	}
 	constexpr BasicString(const_pointer str) {
-		insert(0, str);
+		append(str);
 	}
 
 	constexpr BasicString(BasicString&&) = default;
@@ -783,68 +787,6 @@ constexpr bool operator>=( const BasicString<CharT,N,Traits>& lhs, const CharT* 
 	return !(lhs < rhs);
 }
 
-template <typename Int, std::size_t N>
-constexpr auto sToInt( BasicString<char, N> const& str, std::size_t* pos = 0, int base = 10 )
-	-> std::enable_if_t<std::is_integral<Int>{}, Int> {
-	auto const& digits = BasicString<char, 36>("0123456789"
-	                                           "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-
-	auto p = str.find_first_not_of(" \f\n\t\r\v");
-	AssertExcept<std::invalid_argument>(p != str.npos, "Quasi-empty string");
-
-	std::make_signed_t<Int> sign = 1;
-	if (str[p] == '-') {
-		sign = -1;
-		++p;
-	}
-	else if (str[p] == '+')
-		++p;
-
-	if (base == 0) {
-		AssertExcept<std::invalid_argument>(p < str.size(), "No integer could be extracted");
-		auto suffix_1 = str[p++];
-		if (suffix_1 != '0')
-			base = 10;
-		else {
-			AssertExcept<std::invalid_argument>(p < str.size(), "No integer could be extracted");
-			auto suffix_2 = str[p];
-			if (suffix_2 == 'X' || suffix_2 == 'x') {
-				base = 16;
-				++p;
-			}
-			else
-				base = 8;
-		}
-	}
-
-	Int res = 0;
-	bool written = false;
-	decltype(p) found=0;
-	while (p != str.size()
-	   && (found = digits.find(toupper(str[p]))) != digits.npos) {
-		const auto summand = sign*Int(found);
-
-		// Overflow check. Separate because of two's complement.
-		if (sign ==  1)
-			AssertExcept<std::out_of_range>(res <= std::numeric_limits<Int>::max()/base
-			                        && res*base <= std::numeric_limits<Int>::max()-summand,
-			                          "Integer too large to store");
-		if (sign == -1)
-			AssertExcept<std::out_of_range>(res >= std::numeric_limits<Int>::min()/base
-			                        && res*base >= std::numeric_limits<Int>::min()-summand,
-			                          "Integer too large to store");
-
-		(res *= base) += summand;
-
-		written=true;
-		++p;
-	}
-	AssertExcept<std::invalid_argument>(written, "No integer could be extracted");
-
-	if (pos) *pos = p;
-
-	return res;
-}
 
 }
 

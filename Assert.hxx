@@ -7,7 +7,6 @@
 
 #include <stdexcept>
 
-#include <cstdlib>
 #include <cassert>
 
 namespace Constainer {

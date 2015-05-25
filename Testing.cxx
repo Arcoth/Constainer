@@ -1,7 +1,6 @@
 #include <iostream>
 
-#include "Vector.hxx"
-#include "String.hxx"
+#include "Parser.hxx"
 
 using namespace Constainer;
 
@@ -85,10 +84,10 @@ constexpr auto h() {
 static_assert( h() == "34*****xxxrld!" );
 
 
-static_assert( Constainer::sToInt<int>(String(" 684")) == 684 );
-static_assert( Constainer::sToInt<char>(String(" -128")) == -128 );
-static_assert( Constainer::sToInt<unsigned>(String(" \t-0")) == 0 );
-static_assert( Constainer::sToInt<unsigned>(String(" -0x0"), 0, 0) == 0 );
-static_assert( Constainer::sToInt<unsigned>(String(" +0xFF"), 0, 0) == 0xFF );
-static_assert( Constainer::sToInt<unsigned>(String(" +077"), 0, 0) == 7+8*7 );
-static_assert( Constainer::sToInt<unsigned>(String("11000"), 0, 2) == 24 );
+static_assert( Constainer::strToInt<int>(" 684") == 684 );
+static_assert( Constainer::strToInt<char>(" -128") == -128 );
+static_assert( Constainer::strToInt<unsigned>(" \t-0") == 0 );
+static_assert( Constainer::strToInt<unsigned>(" -0x0", 0, 0) == 0 );
+static_assert( Constainer::strToInt<unsigned>(" +0xFF", 0, 0) == 0xFF );
+static_assert( Constainer::strToInt<unsigned>(" +077", 0, 0) == 7+8*7 );
+static_assert( Constainer::strToInt<unsigned>("11000", 0, 2) == 24 );

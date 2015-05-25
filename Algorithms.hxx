@@ -41,6 +41,13 @@ constexpr auto find(InputIterator first, InputIterator last, T const& val) {
 	return Constainer::find(first, last, val, std::equal_to<>());
 }
 
+template <typename InputIterator, typename T, typename Pred>
+constexpr auto find_if(InputIterator first, InputIterator last, Pred p) {
+	while (first != last && !p(*first))
+		++first;
+	return first;
+}
+
 template <typename InputIt, typename OutputIt>
 constexpr auto copy(InputIt first, InputIt last, OutputIt out) {
 	while (first != last)
@@ -265,10 +272,10 @@ constexpr InputIt find_first_not_of(InputIt first, InputIt last,
 	return last;
 }
 
-template <typename InputIt, typename ForwardIt, typename BinaryPredicate>
+template <typename InputIt, typename ForwardIt>
 constexpr InputIt find_first_not_of(InputIt f, InputIt l,
                                     ForwardIt sf, ForwardIt sl) {
-	return find_first_of(f, l, sf, sl, std::equal_to<>());
+	return find_first_not_of(f, l, sf, sl, std::equal_to<>());
 }
 }
 
