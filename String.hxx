@@ -784,7 +784,8 @@ constexpr bool operator>=( const BasicString<CharT,N,Traits>& lhs, const CharT* 
 }
 
 template <typename Int, std::size_t N>
-constexpr Int sToInt( BasicString<char, N> const& str, std::size_t* pos = 0, int base = 10 ) {
+constexpr auto sToInt( BasicString<char, N> const& str, std::size_t* pos = 0, int base = 10 )
+	-> std::enable_if_t<std::is_integral<Int>{}, Int> {
 	auto const& digits = BasicString<char, 36>("0123456789"
 	                                           "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
