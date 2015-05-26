@@ -9,35 +9,80 @@
 
 namespace Constainer {
 
+
 enum class ParserState {Good, Eof, Fail};
 
+namespace detail {
+
+	template <typename InputIt>
+	constexpr ParserState skipWS(InputIt& first, InputIt last) {
+		String whitespace = " \t\n\f\v\r";
+
+		first = Constainer::find_first_not_of(first, last, whitespace.begin(), whitespace.end());
+
+		return first == last? ParserState::Eof : ParserState::Good;
+	}
+
+	template <typename Arithmetic, typename InputIt>
+	constexpr auto parseSign( InputIt& first )
+	 -> typename std::conditional_t<std::is_integral<Arithmetic>{}, std::make_signed<Arithmetic>, std::remove_cv<Arithmetic>>::type
+	{
+		if (*first == '-') {
+			++first;
+			return -1;
+		}
+		if (*first == '+')
+			++first;
+
+		return 1;
+	}
+}
+
+/** \brief Extracts an integer value from the character range specified by [first, last).
+ *         Very similar to std::strtol. Errors are indicated via the second member of the
+ *         returned struct, which is of type ParserState.
+ *
+ *         Valid values for the base range from 2 to 36, but 0 is also one;
+ *         In the latter case, the bases actual value will be deduced from the prefix.
+ *         If the prefix is 0x or 0X, the base is 16. If the prefix is a sole 0, the
+ *         base is 8. The base is 10 otherwise.
+ *
+ *         If the parsed value is larger or smaller than Int can represent, the returned state
+ *         will be ParserState::Fail - in that case the value of the object referred to by res is set
+ *         to the clamped value of the parsed value, that is, the largest or smallest one representable
+ *         by Int, respectively. If the string does not represent a valid integer, the state is Eof.
+ *         It is Good otherwise.
+ *
+ * \param first An iterator to the first element of the character sequence to extract the values from.
+ * \param first An iterator to the first element of the character sequence to extract the values from.
+ * \param res A reference to an object in which the result will be stored
+ * \param base The base of the representation to parse.
+ *             Can be zero, in which case it will be deduced from the character sequence.
+ * \return A pair that contains both the iterator to the first non-consumed character
+ *         and the state that the parser had at the end of the operation.
+ *
+ */
 template <typename Int, typename InputIt>
 constexpr auto strToInt( InputIt first, InputIt last, Int& res, int base )
 	-> std::enable_if_t<std::is_integral<Int>{}, std::pair<InputIt, ParserState>>
 {
-	String whitespace = " \t\n\f\v\r";
 	String digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-	std::make_signed_t<Int> sign = 1;
-	first = Constainer::find_first_not_of(first, last, whitespace.begin(), whitespace.end());
+	res = 0; // So premature error returns set res to zero
 
-	if (first == last) {res = 0; return {first, ParserState::Eof};}
+	if (detail::skipWS(first, last) == ParserState::Eof)
+		return {first, ParserState::Eof};
 
-	if (*first == '-') {
-		sign = -1;
-		++first;
-	}
-	else if (*first == '+')
-		++first;
+	auto sign = detail::parseSign<Int>(first);
 
 	if (base == 0) {
 
-		if (first == last) {res = 0; return {first, ParserState::Eof};}
+		if (first == last) return {first, ParserState::Eof};
 		auto suffix_1 = *first++;
 		if (suffix_1 != '0')
 			base = 10;
 		else {
-			if (first == last) {res = 0; return {first, ParserState::Eof};}
+			if (first == last) return {first, ParserState::Eof};
 			auto suffix_2 = *first;
 			if (suffix_2 == 'X' || suffix_2 == 'x') {
 				base = 16;
@@ -49,10 +94,10 @@ constexpr auto strToInt( InputIt first, InputIt last, Int& res, int base )
 	}
 
 	res = 0;
-	bool written = false;
-	typename decltype(digits)::size_type found=0;
+	bool read = false;
+	std::size_t found=0;
 	while (first != last
-	   && (found = digits.find(toupper(*first))) != digits.npos)
+	   && (found = digits.rfind(toupper(*first), base-1)) != digits.npos)
 	{
 		const auto summand = sign*Int(found);
 
@@ -74,11 +119,11 @@ constexpr auto strToInt( InputIt first, InputIt last, Int& res, int base )
 
 		(res *= base) += summand;
 
-		written = true;
+		read = true;
 		++first;
 	}
 
-	if (!written) {res = 0; return {first, ParserState::Eof};}
+	if (!read) {res = 0; return {first, ParserState::Eof};}
 
 	return {first, ParserState::Good};
 }
@@ -90,7 +135,7 @@ constexpr auto strToInt( char const* str, std::size_t len, std::size_t* pos = 0,
 
 	auto pair = strToInt<Int>(str, str+len, ret, base);
 	AssertExcept<std::invalid_argument>(pair.second != ParserState::Eof,  "Could not extract any integer");
-	AssertExcept<std::out_of_range>    (pair.second != ParserState::Fail, "Integer represented is too large");
+	AssertExcept<std::out_of_range>    (pair.second != ParserState::Fail, "Integer represented is tout of bounds");
 
 	if (pos)
 		*pos = pair.first - str;

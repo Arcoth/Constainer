@@ -10,7 +10,7 @@ using namespace Constainer;
 
 constexpr Array<int, 10> a {{1, 2, 3, 4, 5}};
 constexpr Array<int, 10> a2{{1, 2, 3, 4, 5}};
-static_assert( a == a2 );
+static_assert( a == a2, "" );
 
 constexpr Array<int, 10> a3{{1, 2}};
 constexpr Array<int, 10> a4{{1, 2, 3}};
@@ -75,7 +75,7 @@ constexpr auto h() {
 	Assert(t.rfind("***", 3) == String::npos);
 
 	Assert(t.find("") == 0);
-	Assert(t.rfind("", 5) == 5);
+	Assert(t.rfind("*", 6) == 6);
 
 	Assert(t.find_first_of("-.,") == String::npos);
 	Assert(t.find_first_of("x*4") == 1);
@@ -88,7 +88,7 @@ constexpr auto h() {
 static_assert( h() == "34*****xxxrld!" );
 
 
-static_assert( Constainer::strToInt<int>(" 684") == 684 );
+static_assert( Constainer::strToInt<int>(" 6849") == 6849 );
 static_assert( Constainer::strToInt<char>(" -128") == -128 );
 static_assert( Constainer::strToInt<unsigned>(" \t-0") == 0 );
 static_assert( Constainer::strToInt<unsigned>(" -0x0", 0, 0) == 0 );
