@@ -43,9 +43,13 @@ constexpr Float safeMul( Float lhs, Float rhs ) {
 		-std::numeric_limits<Float>::infinity(),
 		 std::numeric_limits<Float>::infinity()
 	};
+	const auto infty = infties[1];
 
-	if (lhs < rhs)
+	if (abs(lhs) < abs(rhs))
 		return safeMul(rhs, lhs);
+
+	if (abs(lhs) == infty)
+		return infties[signum(lhs)==signum(rhs)];
 
 	if (abs(rhs) <= 1)
 		return lhs*rhs;

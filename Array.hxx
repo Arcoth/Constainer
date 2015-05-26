@@ -9,6 +9,7 @@
 #include "Iterator.hxx"
 
 #include <cstddef> // size_t
+#include <algorithm> // std::max
 
 namespace Constainer {
 

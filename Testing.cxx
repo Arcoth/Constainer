@@ -38,7 +38,7 @@ constexpr auto f()
 	// 7 4 7 1 2 3 7 7 7 0 5
 	return vec;
 }
-static_assert( f() == Constainer::Vector<int, 20>{7, 4, 7, 1, 2, 3, 7, 7, 7, 0, 5} );
+static_assert( f() == Vector<int, 20>{7, 4, 7, 1, 2, 3, 7, 7, 7, 0, 5} );
 
 
 constexpr auto g() {
@@ -49,7 +49,7 @@ constexpr auto g() {
 	// 6 5 101 102 103 4 3 2 1 0
 	return v;
 }
-static_assert( g() == Constainer::Vector<int, 20>{6, 5, 101, 102, 103, 4, 3, 2, 1, 0} );
+static_assert( g() == Vector<int, 20>{6, 5, 101, 102, 103, 4, 3, 2, 1, 0} );
 
 constexpr auto h() {
 	auto t = "Hello " + String("World") + '!';
@@ -87,17 +87,20 @@ constexpr auto h() {
 }
 static_assert( h() == "34*****xxxrld!" );
 
+static_assert( strToInt<int>(" 6849.") == 6849 );
+static_assert( strToInt<char>(" -128aefws") == -128 );
+static_assert( strToInt<unsigned>(" \t-0") == 0 );
+static_assert( strToInt<unsigned>(" -0x0", 0, 0) == 0 );
+static_assert( strToInt<unsigned>(" +0xFF", 0, 0) == 0xFF );
+static_assert( strToInt<unsigned>(" +077", 0, 0) == 7+8*7 );
+static_assert( strToInt<unsigned>("11000", 0, 2) == 24 );
 
-static_assert( Constainer::strToInt<int>(" 6849.") == 6849 );
-static_assert( Constainer::strToInt<char>(" -128aefws") == -128 );
-static_assert( Constainer::strToInt<unsigned>(" \t-0") == 0 );
-static_assert( Constainer::strToInt<unsigned>(" -0x0", 0, 0) == 0 );
-static_assert( Constainer::strToInt<unsigned>(" +0xFF", 0, 0) == 0xFF );
-static_assert( Constainer::strToInt<unsigned>(" +077", 0, 0) == 7+8*7 );
-static_assert( Constainer::strToInt<unsigned>("11000", 0, 2) == 24 );
+static_assert( safeMul<double>(-0., 0) == 0 );
+static_assert( safeMul<double>(-std::numeric_limits<double>::infinity(),  0) == -std::numeric_limits<double>::infinity() );
+static_assert( safeMul<double>(-std::numeric_limits<double>::infinity(), -1) == std::numeric_limits<double>::infinity() );
 
-static_assert( Constainer::strToFloat<double>("111.11") == 111.11 );
-static_assert( Constainer::strToFloat<double>("-2.22") == -2.22 );
-static_assert( Constainer::strToFloat<double>("-0x1.Bc70a3D70A3d7p+6") == -111.11 );
-static_assert( Constainer::strToFloat<double>("-1.18973e+4932") == -std::numeric_limits<double>::infinity() );
-static_assert( Constainer::strToFloat<double>("-1.18973e-4932") == 0 );
+static_assert( strToFloat<double>("111.11") == 111.11 );
+static_assert( strToFloat<double>("-2.22") == -2.22 );
+static_assert( strToFloat<double>("-0x1.Bc70a3D70A3d7p+6") == -111.11 );
+static_assert( strToFloat<double>("-1.18973e+4932") == -std::numeric_limits<double>::infinity() );
+static_assert( strToFloat<double>("-1.18973e-4932") == 0 );

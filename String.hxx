@@ -8,6 +8,8 @@
 
 #include "Vector.hxx"
 
+#include <string> // char_traits
+
 namespace Constainer {
 
 /**< This policy class template specifies how strings/characters are compared and copied.
