@@ -429,7 +429,7 @@ private:
 public:
 
 	template <typename InputIt>
-	constexpr std::enable_if_t<isInputIterator<InputIt>{}, BasicString&>
+	constexpr requires<isInputIterator<InputIt>, BasicString&>
 	replace(const_iterator first, const_iterator last, InputIt first2, InputIt last2) {
 		auto copy = *this;
 		// To ensure the strong exception guarantee.

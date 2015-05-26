@@ -69,7 +69,7 @@ namespace detail {
  */
 template <typename Int, typename InputIt>
 constexpr auto strToInt( InputIt first, InputIt last, Int& res, int base )
-	-> std::enable_if_t<std::is_integral<Int>{}, ParserState<InputIt>>
+	-> requires<std::is_integral<Int>, ParserState<InputIt>>
 {
 	String digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -137,7 +137,7 @@ constexpr auto strToInt( InputIt first, InputIt last, Int& res, int base )
 
 template <typename Int>
 constexpr auto strToInt( char const* str, std::size_t len, std::size_t* pos = 0, int base = 10 )
-	-> std::enable_if_t<std::is_integral<Int>{}, Int> {
+	-> requires<std::is_integral<Int>, Int> {
 	Int ret = 0;
 
 	auto st = strToInt<Int>(str, str+len, ret, base);
@@ -152,19 +152,19 @@ constexpr auto strToInt( char const* str, std::size_t len, std::size_t* pos = 0,
 
 template <typename Int>
 constexpr auto strToInt( char const* str, std::size_t* pos = 0, int base = 10 )
-	-> std::enable_if_t<std::is_integral<Int>{}, Int> {
+	-> requires<std::is_integral<Int>, Int> {
 	return strToInt<Int>(str, CharTraits<char>::length(str), pos, base);
 }
 
 template <typename Int, std::size_t N>
 constexpr auto strToInt( BasicString<char, N> const& str, std::size_t* pos = 0, int base = 10 )
-	-> std::enable_if_t<std::is_integral<Int>{}, Int> {
+	-> requires<std::is_integral<Int>, Int> {
 	return strToInt<Int>(str.data(), str.size(), pos, base);
 }
 
 template <typename Float, typename InputIt>
 constexpr auto strToFloat( InputIt first, InputIt last, Float& res )
-	-> std::enable_if_t<std::is_floating_point<Float>{}, ParserState<InputIt>>
+	-> requires<std::is_floating_point<Float>, ParserState<InputIt>>
 {
 	String digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -297,7 +297,7 @@ constexpr auto strToFloat( InputIt first, InputIt last, Float& res )
 
 template <typename Float>
 constexpr auto strToFloat( char const* str, std::size_t len, std::size_t* pos = 0 )
-	-> std::enable_if_t<std::is_floating_point<Float>{}, Float> {
+	-> requires<std::is_floating_point<Float>, Float> {
 	Float ret = 0;
 
 	auto st = strToFloat<Float>(str, str+len, ret);
@@ -312,7 +312,7 @@ constexpr auto strToFloat( char const* str, std::size_t len, std::size_t* pos = 
 
 template <typename Float>
 constexpr auto strToFloat( char const* str, std::size_t* pos = 0 )
-	-> std::enable_if_t<std::is_floating_point<Float>{}, Float> {
+	-> requires<std::is_floating_point<Float>, Float> {
 	return strToFloat<Float>(str, CharTraits<char>::length(str), pos);
 }
 

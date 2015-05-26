@@ -9,9 +9,6 @@
 #include <type_traits>
 
 namespace Constainer {
-	template <typename...>
-	using void_t = void;
-
 	template <typename T, typename R=void>
 	using requires = std::enable_if_t<T{}, R>;
 
@@ -23,9 +20,9 @@ namespace Constainer {
 		struct hasIterCategoryConvTo : std::false_type {};
 		template <typename I, typename C>
 		struct hasIterCategoryConvTo<I, C,
-			std::enable_if_t<std::is_convertible<
+			requires<std::is_convertible<
 				typename std::iterator_traits<I>::iterator_category, C
-			>{}>>
+			>>>
 			: std::true_type {};
 	}
 

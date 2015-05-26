@@ -27,7 +27,7 @@ constexpr T signum(T x) {
 }
 
 template <typename T>
-constexpr std::enable_if_t<std::is_arithmetic<T>{}, T>
+constexpr requires<std::is_arithmetic<T>, T>
 abs(T i) {
 	return i>0? i : -i;
 }
@@ -58,7 +58,7 @@ constexpr Float safeMul( Float lhs, Float rhs ) {
 }
 
 template <typename Float>
-constexpr std::enable_if_t<std::is_arithmetic<Float>{}, Float>
+constexpr requires<std::is_arithmetic<Float>, Float>
 pow(Float f, int e) {
 	if (e==0)
 		return 1;

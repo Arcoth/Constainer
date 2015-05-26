@@ -14,13 +14,13 @@ namespace Constainer {
 
 template <typename RandomIt>
 constexpr auto distance( RandomIt first, RandomIt last )
-	-> std::enable_if_t<isRandomAccessIterator<RandomIt>{}, decltype(last-first)>
+	-> requires<isRandomAccessIterator<RandomIt>, decltype(last-first)>
 { return last-first; }
 
 template <typename InputIt>
 constexpr auto distance( InputIt first, InputIt last )
-	-> std::enable_if_t<!isRandomAccessIterator<InputIt>{},
-	                    typename std::iterator_traits<InputIt>::difference_type>
+	-> requires<!isRandomAccessIterator<InputIt>,
+	            typename std::iterator_traits<InputIt>::difference_type>
 {
 	typename std::iterator_traits<InputIt>::difference_type n = 0;
 	for (; first != last; ++first)
