@@ -640,7 +640,7 @@ std::basic_ostream<Char, OTraits>& operator<<( std::basic_ostream<Char, OTraits>
 	if (typename std::basic_ostream<Char, OTraits>::sentry sentry{os})
 		try {
 			auto n = str.size();
-			auto w = os.width();
+			std::size_t w = os.width();
 			if (n < w) {
 				bool left_aligned = (os.flags() & std::ios_base::adjustfield) == std::ios_base::left;
 				if (!left_aligned)
