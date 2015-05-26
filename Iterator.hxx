@@ -12,21 +12,24 @@
 
 namespace Constainer {
 
-template <typename RandomIt>
-constexpr auto distance( RandomIt first, RandomIt last )
-	-> requires<isRandomAccessIterator<RandomIt>, decltype(last-first)>
-{ return last-first; }
+namespace detail {
+	template <typename RandomIt>
+	constexpr auto distance( RandomIt first, RandomIt last, std::random_access_iterator_tag )
+	{ return last-first; }
+
+	template <typename InputIt>
+	constexpr auto distance( InputIt first, InputIt last, std::input_iterator_tag )
+	{
+		typename std::iterator_traits<InputIt>::difference_type n = 0;
+		for (; first != last; ++first)
+			++n;
+		return n;
+	}
+}
 
 template <typename InputIt>
 constexpr auto distance( InputIt first, InputIt last )
-	-> requires<!isRandomAccessIterator<InputIt>,
-	            typename std::iterator_traits<InputIt>::difference_type>
-{
-	typename std::iterator_traits<InputIt>::difference_type n = 0;
-	for (; first != last; ++first)
-		++n;
-	return n;
-}
+{ return detail::distance(first, last, typename std::iterator_traits<InputIt>::iterator_category{}); }
 
 template <typename InputIt>
 constexpr void advance( InputIt& it, typename std::iterator_traits<InputIt>::difference_type n ) {

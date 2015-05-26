@@ -244,7 +244,7 @@ private:
 
 	template <typename ForwardIt>
 	constexpr iterator _insert( iterator pos, ForwardIt first, ForwardIt last, std::forward_iterator_tag ) {
-		_createInsertionSpace(pos, distance(first, last));
+		_createInsertionSpace(pos, Constainer::distance(first, last));
 		copy( first, last, pos );
 		return pos;
 	}
@@ -307,8 +307,8 @@ private:
 	template <std::size_t OtherMax, typename OtherTraits, std::size_t addBuffOther>
 	constexpr void _swap_trailing_elems( BasicVector<value_type, OtherMax, OtherTraits, addBuffOther>& other, size_type len ) {
 		// Use the trait of the destination string
-		if (other.size()> size()) CopyTraits::move(_address(begin()+len), _address(other.begin() + len), distance(other.begin() + len, other.end()));
-		else                     OtherTraits::move(_address(other.begin()+len),_address(begin()+len), distance(begin() + len, end()));
+		if (other.size()> size()) CopyTraits::move(_address(begin()+len), _address(other.begin() + len), other.end() - (other.begin() + len));
+		else                     OtherTraits::move(_address(other.begin()+len),_address(begin()+len), end() - (begin() + len));
 	}
 	template <typename U, std::size_t OtherMax, typename OtherTraits, std::size_t addBuffOther>
 	constexpr void _swap_trailing_elems( BasicVector<U, OtherMax, OtherTraits, addBuffOther>& other, size_type len ) {
