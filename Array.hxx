@@ -7,6 +7,7 @@
 
 #include "Algorithms.hxx"
 #include "Iterator.hxx"
+#include "Fundamental.hxx"
 
 #include <cstddef> // size_t
 #include <algorithm> // std::max
@@ -14,11 +15,10 @@
 namespace Constainer {
 
 template <typename T, std::size_t Size>
-class Array {
-public:
+struct Array {
 
 	using size_type = std::size_t;
-	static auto constexpr size() {return Size;}
+	CONSTAINER_PURE_CONST static auto constexpr size() {return Size;}
 
 	using difference_type = std::ptrdiff_t;
 

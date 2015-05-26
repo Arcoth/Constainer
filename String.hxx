@@ -7,6 +7,7 @@
 #define STRING_HXX_INCLUDED
 
 #include "Vector.hxx"
+#include "Fundamental.hxx"
 
 #include <string> // char_traits
 
@@ -25,9 +26,10 @@ public:
 	using pos_type  = typename _char_traits::pos_type;
 	using off_type  = typename _char_traits::off_type;
 
-	static constexpr bool eq( char_type a, char_type b ) {return a==b;}
-	static constexpr bool lt( char_type a, char_type b ) {return a <b;}
+	CONSTAINER_PURE_CONST static constexpr bool eq( char_type a, char_type b ) {return a==b;}
+	CONSTAINER_PURE_CONST static constexpr bool lt( char_type a, char_type b ) {return a <b;}
 
+	CONSTAINER_PURE_CONST
 	static constexpr bool eq_int_type(int_type const& lhs, int_type const& rhs) { return lhs == rhs; }
 
 	static constexpr int compare(char_type const* s1, char_type const* s2, std::size_t n) {
@@ -70,8 +72,8 @@ public:
 	static constexpr char_type to_char_type( int_type i ) {return std::char_traits<char_type>::to_char_type(i);}
 	static constexpr char_type to_int_type( char_type c ) {return std::char_traits<char_type>::to_int_type(c);}
 
-	static constexpr int_type eof() { return _char_traits::eof(); }
-	static constexpr int_type not_eof(int_type c) { return _char_traits::not_eof(c); }
+	CONSTAINER_PURE_CONST static constexpr int_type eof() { return _char_traits::eof(); }
+	CONSTAINER_PURE_CONST static constexpr int_type not_eof(int_type c) { return _char_traits::not_eof(c); }
 
 	static constexpr void assign( char_type& a, const char_type& b ) {a=b;}
 
@@ -82,7 +84,7 @@ public:
 	}
 };
 
-constexpr bool isspace(int i) {
+CONSTAINER_PURE_CONST constexpr bool isspace(int i) {
 	using _traits = CharTraits<char>;
 	if (_traits::eq(i, _traits::eof()))
 		return false;
@@ -91,12 +93,7 @@ constexpr bool isspace(int i) {
 	    || ch == '\t' || ch == '\r' || ch == '\v';
 }
 
-constexpr char const* skipSpaces(char const* str) {
-	while (*str && isspace(*str)) ++str;
-	return str;
-}
-
-constexpr int toupper(int i) {
+CONSTAINER_PURE_CONST constexpr int toupper(int i) {
 	using _traits = CharTraits<char>;
 	if (_traits::eq(i, _traits::eof()))
 		return i;

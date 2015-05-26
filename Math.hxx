@@ -5,29 +5,31 @@
 #ifndef MATH_HXX_INCLUDED
 #define MATH_HXX_INCLUDED
 
+#include "Fundamental.hxx"
+
 #include <type_traits>
 
 namespace Constainer {
 
 namespace detail {
 	template <typename T>
-	constexpr T signum(T x, std::false_type) {
+	CONSTAINER_PURE_CONST constexpr T signum(T x, std::false_type) {
 		return T(0) < x;
 	}
 
 	template <typename T>
-	constexpr T signum(T x, std::true_type) {
+	CONSTAINER_PURE_CONST constexpr T signum(T x, std::true_type) {
 		return (T(0) < x) - (x < T(0));
 	}
 }
 
 template <typename T>
-constexpr T signum(T x) {
+CONSTAINER_PURE_CONST constexpr T signum(T x) {
 	return detail::signum(x, std::is_signed<T>());
 }
 
 template <typename T>
-constexpr requires<std::is_arithmetic<T>, T>
+CONSTAINER_PURE_CONST constexpr requires<std::is_arithmetic<T>, T>
 abs(T i) {
 	return i>0? i : -i;
 }
@@ -38,7 +40,7 @@ abs(T i) {
      are technically invoking undefined behavior, which is not allowed to appear
      in constant expressions. Used in Parsers.hxx. */
 template <typename Float>
-constexpr Float safeMul( Float lhs, Float rhs ) {
+CONSTAINER_PURE_CONST constexpr Float safeMul( Float lhs, Float rhs ) {
 	const Float infties[] {
 		-std::numeric_limits<Float>::infinity(),
 		 std::numeric_limits<Float>::infinity()
@@ -54,14 +56,14 @@ constexpr Float safeMul( Float lhs, Float rhs ) {
 	if (abs(rhs) <= 1)
 		return lhs*rhs;
 
-	if (abs(lhs) > std::numeric_limits<Float>::max()/abs(rhs))
+	if (abs(rhs) > std::numeric_limits<Float>::max()/abs(lhs))
 		return infties[signum(lhs)==signum(rhs)];
 
 	return lhs*rhs;
 }
 
 template <typename Float>
-constexpr requires<std::is_arithmetic<Float>, Float>
+CONSTAINER_PURE_CONST constexpr requires<std::is_arithmetic<Float>, Float>
 pow(Float f, int e) {
 	if (e==0)
 		return 1;
