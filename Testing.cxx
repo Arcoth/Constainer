@@ -99,8 +99,9 @@ static_assert( safeMul<double>(-0., 0) == 0 );
 static_assert( safeMul<double>(-std::numeric_limits<double>::infinity(),  0) == -std::numeric_limits<double>::infinity() );
 static_assert( safeMul<double>(-std::numeric_limits<double>::infinity(), -1) == std::numeric_limits<double>::infinity() );
 
-static_assert( strToFloat<double>("111.11") == 111.11 );
-static_assert( strToFloat<double>("-2.22") == -2.22 );
+/**< These should go well on most implementations. */
+static_assert( strToFloat<double>("+123.456789e0") == 123.456789 );
 static_assert( strToFloat<double>("-0x1.Bc70a3D70A3d7p+6") == -111.11 );
-static_assert( strToFloat<double>("-1.18973e+4932") == -std::numeric_limits<double>::infinity() );
+static_assert( strToFloat<double     >("-1.18973e+4932") == -std::numeric_limits<double>::infinity() );
+static_assert( strToFloat<long double>("-1.18973e+4932") != -std::numeric_limits<long double>::infinity() );
 static_assert( strToFloat<double>("-1.18973e-4932") == 0 );
