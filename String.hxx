@@ -26,10 +26,9 @@ public:
 	using pos_type  = typename _char_traits::pos_type;
 	using off_type  = typename _char_traits::off_type;
 
-	CONSTAINER_PURE_CONST static constexpr bool eq( char_type a, char_type b ) {return a==b;}
-	CONSTAINER_PURE_CONST static constexpr bool lt( char_type a, char_type b ) {return a <b;}
+	static constexpr bool eq( char_type a, char_type b ) {return a==b;}
+	static constexpr bool lt( char_type a, char_type b ) {return a <b;}
 
-	CONSTAINER_PURE_CONST
 	static constexpr bool eq_int_type(int_type const& lhs, int_type const& rhs) { return lhs == rhs; }
 
 	static constexpr int compare(char_type const* s1, char_type const* s2, std::size_t n) {
@@ -72,8 +71,8 @@ public:
 	static constexpr char_type to_char_type( int_type i ) {return std::char_traits<char_type>::to_char_type(i);}
 	static constexpr char_type to_int_type( char_type c ) {return std::char_traits<char_type>::to_int_type(c);}
 
-	CONSTAINER_PURE_CONST static constexpr int_type eof() { return _char_traits::eof(); }
-	CONSTAINER_PURE_CONST static constexpr int_type not_eof(int_type c) { return _char_traits::not_eof(c); }
+	static constexpr int_type eof() { return _char_traits::eof(); }
+	static constexpr int_type not_eof(int_type c) { return _char_traits::not_eof(c); }
 
 	static constexpr void assign( char_type& a, const char_type& b ) {a=b;}
 
@@ -137,8 +136,6 @@ private:
 	template <size_type OtherN>
 	using ThisResized = BasicString<Char, OtherN>;
 
-	constexpr bool _is_null(const_pointer str) {return traits_type::eq(*str, value_type()); }
-
 public:
 
 	using _base::erase;
@@ -157,10 +154,11 @@ public:
 	using _base::clear;
 	using _base::empty;
 	using _base::front;
-	using _base::max_size;
 	using _base::operator[];
 	using _base::pop_back;
 	using _base::size;
+
+	constexpr size_type max_size() const {return npos-1;}
 
 	constexpr auto length() const {return size();}
 
@@ -606,23 +604,24 @@ public:
 	constexpr size_type find_last_not_of(ThisResized<OtherMax> const& other, size_type pos = npos) const {
 		return find_last_of(other.data(), pos, other.size());
 	}
-
 };
+}
 
 #include <ostream>
 
-/**< The following three functions have been taken from libstdc++ and adjusted syntactically. Creds to the developers of that implementation. */
+/**< The following three functions have been taken from libstdc++ and adjusted. Creds to the developers of that implementation. */
 
+namespace Constainer {
 namespace detail {
-	template <typename CharT, typename Traits>
-	void writeTo(std::basic_ostream<CharT, Traits>& os,
-	             CharT const* s, std::streamsize n) {
+	template <typename Char, typename Traits>
+	void writeTo(std::basic_ostream<Char, Traits>& os,
+	             Char const* s, std::streamsize n) {
 		if (os.rdbuf()->sputn(s, n) != n)
 			os.setstate(std::ios_base::badbit);
 	}
 
-	template <typename CharT, typename Traits>
-	void fill(std::basic_ostream<CharT, Traits>& os, std::streamsize n) {
+	template <typename Char, typename Traits>
+	void fill(std::basic_ostream<Char, Traits>& os, std::streamsize n) {
 		auto c = os.fill();
 		while (n-- > 0)
 			if (Traits::eq_int_type(os.rdbuf()->sputc(c), Traits::eof())) {
@@ -802,6 +801,13 @@ constexpr std::size_t hash(const char* str, std::size_t len) {
 	while (len--)
 		h = (h ^ *str++) * prime;
 	return h;
+}
+constexpr std::size_t hash(const char* str) {
+	return hash(str, CharTraits<char>::length(str));
+}
+template <std::size_t N, typename Traits>
+constexpr std::size_t hash(BasicString<char, N, Traits> const& str) {
+	return hash(str.c_str(), str.size());
 }
 
 }
