@@ -17,7 +17,8 @@ namespace Constainer {
     go back one step in the call stack for this error and check the message */
 template <typename Except=std::logic_error, typename... Args>
 constexpr void AssertExcept(bool b, Args&&... args) {
-	if (!b) throw Except(std::forward<Args>(args)...);
+	if (!b)
+		throw Except(std::forward<Args>(args)...);
 }
 
 /*! If you're getting an error message about … not being usable in a constant expression here,
