@@ -11,8 +11,6 @@
 #include <type_traits>
 
 namespace Constainer {
-	template <typename T, typename R=void>
-	using requires = std::enable_if_t<T{}, R>;
 
 	/*! The following traits depend on the resolution of LWG issue #2408 which is not included in C++14 but already resolved in
 	    libc++ and libstdc++ */

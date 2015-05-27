@@ -5,40 +5,51 @@
 #ifndef RANGEACCESS_HXX_INCLUDED
 #define RANGEACCESS_HXX_INCLUDED
 
+#include "Iterator.hxx"
+
 #include <cstddef>
 #include <iterator>
 
 namespace Constainer {
-	namespace exposed_detail {
-		namespace inner_detail {
+	namespace detail {
 		template <int i> struct rank : rank<i+1> {};
 		template <> struct rank<10> {};
 
 		template <typename T>
-		constexpr auto _begin(rank<0>, T& t) -> decltype(begin(t)) {return begin(t);}
+		constexpr auto _begin(rank<0>, T&& t)
+		-> decltype(requires_not<assocWithNS<T>>{}, begin(std::forward<T>(t)))
+		                                    {return begin(std::forward<T>(t));}
 		template <typename T>
-		constexpr auto _end  (rank<0>, T& t) -> decltype(begin(t)) {return   end(t);}
+		constexpr auto   _end(rank<0>, T&& t)
+		-> decltype(requires_not<assocWithNS<T>>{}, end(std::forward<T>(t)))
+		                                    {return end(std::forward<T>(t));}
 
 		template <typename T>
-		constexpr auto _begin(rank<1>, T& t) -> decltype(t.begin()) {return t.begin();}
+		constexpr auto _begin(rank<1>, T&& t)
+		-> decltype(std::forward<T>(t).begin())
+		    {return std::forward<T>(t).begin();}
 		template <typename T>
-		constexpr auto _end  (rank<1>, T& t) -> decltype(t.  end()) {return t.  end();}
+		constexpr auto _end  (rank<1>, T&& t)
+		-> decltype(std::forward<T>(t).  end())
+		    {return std::forward<T>(t).  end();}
 
 		template <typename T, std::size_t N>
 		constexpr auto _begin(rank<2>, T(&t)[N]) {return t;}
 		template <typename T, std::size_t N>
 		constexpr auto _end  (rank<2>, T(&t)[N]) {return t+N;}
-		}
 
-		template <typename T>
-		constexpr decltype(auto) begin(T&& t)
-		{return inner_detail::_begin(inner_detail::rank<0>(), std::forward<T>(t));}
-		template <typename T>
-		constexpr decltype(auto) end  (T&& t)
-		{return inner_detail::_end  (inner_detail::rank<0>(), std::forward<T>(t));}
+		template <typename T, std::size_t N>
+		constexpr auto _begin(rank<2>, T(&&t)[N]) {return t;}
+		template <typename T, std::size_t N>
+		constexpr auto _end  (rank<2>, T(&&t)[N]) {return t+N;}
 	}
-	// Prevents a recursive instantiation via ADL of Constainer::-members
-	using namespace exposed_detail;
+
+	template <typename T>
+	constexpr decltype(auto) begin(T&& t)
+	{return detail::_begin(detail::rank<0>(), std::forward<T>(t));}
+	template <typename T>
+	constexpr decltype(auto) end  (T&& t)
+	{return detail::_end  (detail::rank<0>(), std::forward<T>(t));}
 
 	template <typename T>
 	constexpr auto rbegin(T& t) {return make_reverse_iterator(  end(t));}

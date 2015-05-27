@@ -6,7 +6,7 @@
 #ifndef ITERATOR_HXX_INCLUDED
 #define ITERATOR_HXX_INCLUDED
 
-#include "Traits.hxx"
+#include "impl/IteratorTraits.hxx"
 
 #include <iterator>
 

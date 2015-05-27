@@ -2,11 +2,21 @@
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
-#include <iostream>
-
+#include <initializer_list>
+#include "RangeAccess.hxx"
 #include "Parser.hxx"
+#include "Vector.hxx"
+
+// Check ADL range access
+static_assert( std::is_same<decltype(begin(Constainer::String())), Constainer::String::iterator>{} );
+static_assert( *Constainer::begin(std::initializer_list<int>{1, 2, 3}) == 1 );
 
 using namespace Constainer;
+
+static_assert(sizeof(String64 )  ==   64);
+static_assert(sizeof(String256)  ==  256);
+static_assert(sizeof(String512)  ==  512);
+static_assert(sizeof(String1024) == 1024);
 
 constexpr Array<int, 10> a {{1, 2, 3, 4, 5}};
 constexpr Array<int, 10> a2{{1, 2, 3, 4, 5}};
@@ -19,15 +29,16 @@ static_assert( a3 < a4 && a4 < a5 );
 
 constexpr auto f()
 {
-	Vector<int, 100> vec(6, 7), vec2{4, 5, 10};
+	Vector<int, 100> vec(6, 7);
+	Vector<int, 50> vec2{4, 5, 10};
 	// vec: 7 7 7 7 7 7
 	vec.insert(vec.begin()+3, {1, 2, 3});
 	// vec: 7 7 7 1 2 3 7 7 7
-	vec.insert(vec.begin()+1, vec2.begin(), vec2.end()-1);
+	vec.insert(begin(vec)+1, begin(vec2), end(vec2)-1);
 	// vec: 7 4 5 7 7 1 2 3 7 7 7
-	vec.erase(vec.begin()+2, vec.begin()+4);
+	vec.erase(begin(vec)+2, begin(vec)+4);
 	// vec: 7 4 7 1 2 3 7 7 7
-	vec2.swap(vec);
+	swap(vec, vec2);
 	vec = vec2;
 	// vec: 7 4 7 1 2 3 7 7 7, the above is a noop wrt to vec
 	vec.push_back(vec < vec2);
@@ -39,7 +50,6 @@ constexpr auto f()
 	return vec;
 }
 static_assert( f() == Vector<int, 20>{7, 4, 7, 1, 2, 3, 7, 7, 7, 0, 5} );
-
 
 constexpr auto g() {
 	Vector <int, 10> v(7);
@@ -88,9 +98,9 @@ constexpr auto h() {
 static_assert( h() == "34*****xxxrld!" );
 
 static_assert( strToInt<int>(" 6849.") == 6849 );
-static_assert( strToInt<char>(" -128aefws") == -128 );
+static_assert( strToInt<signed char>(" -128aefws") == -128 );
 static_assert( strToInt<unsigned>(" \t-0") == 0 );
-static_assert( strToInt<unsigned>(" -0x0", 0, 0) == 0 );
+static_assert( strToInt<unsigned>(" -0x0Xx", 0, 0) == 0 );
 static_assert( strToInt<unsigned>(" +0xFF", 0, 0) == 0xFF );
 static_assert( strToInt<unsigned>(" +077", 0, 0) == 7+8*7 );
 static_assert( strToInt<unsigned>("11000", 0, 2) == 24 );
@@ -101,7 +111,8 @@ static_assert( safeMul<double>(-std::numeric_limits<double>::infinity(), -1) == 
 
 /**< These should go well on most implementations. */
 static_assert( strToFloat<double>("+123.456789e0") == 123.456789 );
+static_assert( strToFloat<double>("+123.456789e0") == 123.456789 );
 static_assert( strToFloat<double>("-0x1.Bc70a3D70A3d7p+6") == -111.11 );
 static_assert( strToFloat<double     >("-1.18973e+4932") == -std::numeric_limits<double>::infinity() );
 static_assert( strToFloat<long double>("-1.18973e+4932") != -std::numeric_limits<long double>::infinity() );
-static_assert( strToFloat<double>("-1.18973e-4932") == 0 );
+static_assert( strToFloat<double>("-0x.8p-1") == -0.25 );

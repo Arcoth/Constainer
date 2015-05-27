@@ -5,7 +5,7 @@
 #ifndef MATH_HXX_INCLUDED
 #define MATH_HXX_INCLUDED
 
-#include "Fundamental.hxx"
+#include "impl/Fundamental.hxx"
 
 #include <type_traits>
 
@@ -13,12 +13,12 @@ namespace Constainer {
 
 namespace detail {
 	template <typename T>
-	CONSTAINER_PURE_CONST constexpr T signum(T x, std::false_type) {
+	constexpr T signum(T x, std::false_type) {
 		return T(0) < x;
 	}
 
 	template <typename T>
-	CONSTAINER_PURE_CONST constexpr T signum(T x, std::true_type) {
+	constexpr T signum(T x, std::true_type) {
 		return (T(0) < x) - (x < T(0));
 	}
 }
@@ -31,6 +31,7 @@ CONSTAINER_PURE_CONST constexpr T signum(T x) {
 template <typename T>
 CONSTAINER_PURE_CONST constexpr requires<std::is_arithmetic<T>, T>
 abs(T i) {
+	// Works for infty, and -0.: Returns --0. = +0.
 	return i>0? i : -i;
 }
 

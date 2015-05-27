@@ -6,8 +6,7 @@
 #ifndef STRING_HXX_INCLUDED
 #define STRING_HXX_INCLUDED
 
-#include "Vector.hxx"
-#include "Fundamental.hxx"
+#include "impl/BasicVector.hxx"
 
 #include <string> // char_traits
 
@@ -467,8 +466,8 @@ public:
 
 	void push_back(value_type c) {_base::push_back(c);}
 
-	template <std::size_t OtherMax>
-	constexpr void swap( ThisResized<OtherMax>& other ) {
+	template <std::size_t OtherMax, typename OtherTraits>
+	constexpr void swap( BasicString<value_type, OtherMax, OtherTraits>& other ) {
 		_base::swap(other);
 	}
 
@@ -605,6 +604,28 @@ public:
 		return find_last_of(other.data(), pos, other.size());
 	}
 };
+
+template <typename Char, std::size_t N1, std::size_t N2, typename Traits1, typename Traits2>
+constexpr void swap( BasicString<Char, N1, Traits1>& lhs, BasicString<Char, N2, Traits2>& rhs ) {
+	lhs.swap(rhs);
+}
+
+/* The total size of Stringxxx is xxx bytes.The underlying buffer is smaller.
+   It is possible to write a TMP-program that binary recursively iterates through all
+   possible specializations and picks the one with the size desired. But this should
+   work, considering the alignment conventions:
+*/
+using String64   = BasicString<char,   63-sizeof(std::size_t)>;
+using String256  = BasicString<char,  255-sizeof(std::size_t)>;
+using String512  = BasicString<char,  511-sizeof(std::size_t)>;
+using String1024 = BasicString<char, 1023-sizeof(std::size_t)>;
+
+using String = String256;
+
+constexpr String64  operator"" _cstr  ( char const* str, std::size_t len ) {return {str, len};}
+constexpr String256 operator"" _lcstr ( char const* str, std::size_t len ) {return {str, len};}
+constexpr String512 operator"" _xlcstr( char const* str, std::size_t len ) {return {str, len};}
+
 }
 
 #include <ostream>
@@ -690,12 +711,6 @@ constexpr auto operator+(Char lhs, BasicString<Char, N, Traits> const& rhs) {
 }
 
 //! Note: The move overloads are not provided as they aren't beneficial for this implementation
-
-using String = BasicString<char, 256>;
-
-constexpr String operator"" _s( char const* str, std::size_t len ) {
-	return {str, len};
-}
 
 /**< A load of relational operators follows. */
 
