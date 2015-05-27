@@ -5,6 +5,8 @@
 #ifndef TRAITS_HXX_INCLUDED
 #define TRAITS_HXX_INCLUDED
 
+#include "Fundamental.hxx"
+
 #include <iterator>
 #include <type_traits>
 
