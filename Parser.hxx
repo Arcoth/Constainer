@@ -20,12 +20,9 @@ struct ParserState {
 namespace detail {
 
 	template <typename InputIt>
-	constexpr ParserState<InputIt> skipWS(InputIt first, InputIt last) {
+	constexpr InputIt skipWS(InputIt first, InputIt last) {
 		String whitespace = " \t\n\f\v\r";
-
-		first = Constainer::find_first_not_of(first, last, whitespace.begin(), whitespace.end());
-
-		return {first, first == last? PState::Eof : PState::Good};
+		return Constainer::find_first_not_of(first, last, whitespace.begin(), whitespace.end());
 	}
 
 	template <typename Arithmetic, typename InputIt>
@@ -68,17 +65,19 @@ namespace detail {
  *
  */
 template <typename Int, typename InputIt>
-constexpr auto strToInt( InputIt first, InputIt last, Int& res, int base )
+constexpr auto strToInt( InputIt first, InputIt last, Int& res, int base=10 )
 	-> requires<std::is_integral<Int>, ParserState<InputIt>>
 {
+	constexpr auto MAX = std::numeric_limits<Int>::max(),
+	               MIN = std::numeric_limits<Int>::lowest();
+
 	String digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 	res = 0; // So premature error returns set res to zero
 
-	auto p_state = detail::skipWS(first, last);
-	if (p_state.state == PState::Eof)
-		return p_state;
-	first = p_state.iterator;
+	first = detail::skipWS(first, last);
+	if (first == last)
+		return {first, PState::Eof};
 
 	auto sign = detail::parseSign<Int>(first);
 
@@ -107,9 +106,6 @@ constexpr auto strToInt( InputIt first, InputIt last, Int& res, int base )
 	   && (found = digits.rfind(toupper(*first), base-1)) != digits.npos)
 	{
 		const auto summand = sign*Int(found);
-
-		constexpr auto MAX = std::numeric_limits<Int>::max(),
-				   MIN = std::numeric_limits<Int>::lowest();
 
 		// Overflow check. Separate because of two's complement.
 
@@ -142,7 +138,7 @@ constexpr auto strToInt( char const* str, std::size_t len, std::size_t* pos = 0,
 
 	auto st = strToInt<Int>(str, str+len, ret, base);
 	AssertExcept<std::invalid_argument>(st.state != PState::Eof,  "Could not extract any integer");
-	AssertExcept<std::out_of_range>    (st.state != PState::Fail, "Integer represented is tout of bounds");
+	AssertExcept<std::out_of_range>    (st.state != PState::Fail, "Integer represented is out of bounds");
 
 	if (pos)
 		*pos = st.iterator - str;
@@ -170,10 +166,9 @@ constexpr auto strToFloat( InputIt first, InputIt last, Float& res )
 
 	res = 0; // So a premature return (see below) does not leave res unset
 
-	auto p_state = detail::skipWS(first, last);
-	if (p_state.state == PState::Eof)
-		return p_state;
-	first = p_state.iterator;
+	first = detail::skipWS(first, last);
+	if (first == last)
+		return {first, PState::Eof};
 
 	auto sign = detail::parseSign<Float>(first);
 
