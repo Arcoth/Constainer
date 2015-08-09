@@ -1,3 +1,7 @@
+/* Copyright 2015 Robert Haberlach
+	Distributed under the Boost Software License, Version 1.0.
+	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
+
 #ifndef FUNDAMENTAL_HXX_INCLUDED
 #define FUNDAMENTAL_HXX_INCLUDED
 
@@ -14,6 +18,16 @@
 	#error This library depends on char representing an octet. Your runtime environment is bad, and you should feel bad.
 #endif
 
+#ifndef CONSTAINER_PURE
+	#if defined __clang__ || defined __GNUG__
+		#define CONSTAINER_PURE [[gnu::pure]]
+	#elif defined __INTEL_COMPILER
+		#define CONSTAINER_PURE __attribute__((pure))
+	#else
+		#define CONSTAINER_PURE
+	#endif
+#endif // defined CONSTAINER_PURE
+
 #ifndef CONSTAINER_PURE_CONST
 	#if defined __clang__ || defined __GNUG__
 		#define CONSTAINER_PURE_CONST [[gnu::const]]
@@ -26,6 +40,8 @@
 
 namespace Constainer {
 
+template <typename T> struct identity {using type=T;};
+
 /**< More literal versions of enable_if */
 template <typename T, typename R=void>
 using requires     = std::enable_if_t<T{}, R>;
@@ -33,12 +49,28 @@ using requires     = std::enable_if_t<T{}, R>;
 template <typename T, typename R=void>
 using requires_not = std::enable_if_t<!T{}, R>;
 
-/**< This template is, despite being well-formed per se,
-     useful for getting a type "printed" at compile-time.  */
+/**< Depends on the resolution of LWG #2296 */
+template <typename T>
+constexpr auto addressof( T& t ) {
+#ifdef __clang__
+	return __builtin_addressof(t);
+#else
+	return &t;
+#endif
+}
+
+template <typename T>
+constexpr decltype(auto) as_const(T const& obj) {return obj;}
+
+/**< These templates are, despite being well-formed per se(!),
+     useful for getting a type or value "printed" at compile-time.  */
 template <typename T>
 void forceError() {
-	forceError(T());
+	forceError(T(), 0);
 }
+
+template <typename T>
+void forceError(T);
 
 }
 
