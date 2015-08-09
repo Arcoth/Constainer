@@ -1,9 +1,9 @@
-#ifndef BITSET_HXX_INCLUDED
-#define BITSET_HXX_INCLUDED
-
 /* Copyright 2015 Robert Haberlach
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
+
+#ifndef BITSET_HXX_INCLUDED
+#define BITSET_HXX_INCLUDED
 
 #include "Algorithms.hxx"
 #include "Math.hxx"
