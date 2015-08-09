@@ -6,10 +6,12 @@
 #include "RangeAccess.hxx"
 #include "Parser.hxx"
 #include "Vector.hxx"
+#include "Bitset.hxx"
+#include "ChunkPool.hxx"
 
 // Check ADL range access
 static_assert( std::is_same<decltype(begin(Constainer::String())), Constainer::String::iterator>{} );
-static_assert( *Constainer::begin(std::initializer_list<int>{1, 2, 3}) == 1 );
+static_assert( *Constainer::next(Constainer::begin(std::initializer_list<int>{1, 2, 3}), 1) == 2 );
 
 using namespace Constainer;
 
@@ -26,6 +28,29 @@ constexpr Array<int, 10> a3{{1, 2}};
 constexpr Array<int, 10> a4{{1, 2, 3}};
 constexpr Array<int, 10> a5{{1, 2, 4}};
 static_assert( a3 < a4 && a4 < a5 );
+
+constexpr auto d() {
+	ChunkPool<int, 17> c;
+	int* ptr = c.grab();
+	Assert( c.used() == 1 );
+	c.free(ptr);
+	return 0;
+}
+static_assert( d() == 0 );
+
+constexpr auto e() {
+	Bitset<55> b;
+	b.set(45);
+	Assert(b.test(45) && b.count() == 1 && b.any() && b.leading(0) == 45);
+	b.flip(45);
+	Assert(b.count() == 0 && b.none() && b.leading(0) == 55);
+	Assert(b.flip().count() == 55 && b.all() && b.leading(0) == 0 && b.leading(1) == 55);
+	Assert(b.reset(7).reset(54).count() == 53 && b.leading(1) == 7);
+	b[1] = ~b[10].flip();
+	Assert(b[1] == true && b[10] == false);
+	return 0;
+}
+static_assert( e() == 0 );
 
 constexpr auto f()
 {
