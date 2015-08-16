@@ -44,10 +44,10 @@ template <typename T> struct identity {using type=T;};
 
 /**< More literal versions of enable_if */
 template <typename T, typename R=void>
-using requires     = std::enable_if_t<T{}, R>;
+using require     = std::enable_if_t<T{}, R>;
 
 template <typename T, typename R=void>
-using requires_not = std::enable_if_t<!T{}, R>;
+using require_not = std::enable_if_t<!T{}, R>;
 
 /**< Depends on the resolution of LWG #2296 */
 template <typename T>
