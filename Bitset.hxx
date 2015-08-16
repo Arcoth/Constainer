@@ -144,13 +144,13 @@ public:
 		return *this;
 	}
 
-	constexpr size_type leading(bool v) const {
-		if (!v) {
-			for (auto& c : _storage)
-				if  (c != 0) return std::min<size_type>(size(), (&c-&_storage[0])*_bits_per_chunk + count_trailing( c));
+	constexpr size_type leading(bool value) const {
+		std::size_t count = 0;
+		for (auto& c : _storage) {
+			auto v = value? ~c : c;
+			if (v != 0)
+				return std::min<size_type>(size(), count++*_bits_per_chunk + count_trailing(v));
 		}
-		else  for (auto& c : _storage)
-				if (~c != 0) return std::min<size_type>(size(), (&c-&_storage[0])*_bits_per_chunk + count_trailing(~c));
 
 		return size();
 	}
