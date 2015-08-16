@@ -48,7 +48,9 @@ public:
 		auto pos = _used.leading(1);
 		AssertExcept<std::bad_alloc>(pos != this->size());
 		_used.set(pos);
-		return &_base::operator[](pos);
+		auto& ref = _base::operator[](pos);
+		ref = value_type();
+		return &ref;
 	}
 
 	constexpr void free() {
