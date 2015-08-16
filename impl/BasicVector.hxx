@@ -68,6 +68,19 @@ public:
 	using typename _base::reference;
 	using typename _base::const_reference;
 
+protected:
+	constexpr pointer _address(const_iterator i) {
+		static_assert( std::is_same<const_iterator, const_pointer>{},
+		               "Requires const_iterator = const_pointer" );
+		return const_cast<pointer>(i);
+	}
+
+	constexpr pointer _remcv(const_iterator i) {
+		static_assert( std::is_same<const_iterator, const_pointer>{},
+		               "Requires const_iterator = const_pointer" );
+		return const_cast<iterator>(i);
+	}
+
 private:
 	template <size_type OtherN>
 	using ThisResized = BasicVector<value_type, OtherN, traits_type, addBufferSize>;
@@ -117,7 +130,7 @@ public:
 	}
 
 	template <typename InputIt,
-	          typename=requires<isInputIterator<InputIt>>>
+	          typename=require<isInputIterator<InputIt>>>
 	constexpr BasicVector( InputIt first, InputIt last ) : BasicVector() {
 		assign(first, last);
 	}
@@ -194,12 +207,21 @@ public:
 		Assert(s < size(), "Invalid index!"); return _base::operator[](s);
 	}
 
+private:
+
+	/**< This overload of emplace_back is viable if the shown way to
+	     initialize a temporary of value_type is valid */
 	template <typename... Args>
-	constexpr void emplace_back( Args&&... args ) {
+	constexpr auto _emplace_back( int, Args&&... args )
+	  -> decltype( void(value_type(std::forward<Args>(args)...)) ) {
 		push_back( value_type(std::forward<Args>(args)...) );
 	}
+	/**< … otherwise, try direct-list-initialization */
+	template <typename... Args>
+	constexpr void _emplace_back( float, Args&&... args ) {
+		push_back( value_type{std::forward<Args>(args)...} );
+	}
 
-private:
 	template <typename U>
 	constexpr void _push_back( U&& u ) {
 		_verifySizeInc(1);
@@ -207,20 +229,12 @@ private:
 		++_size;
 	}
 
-protected:
-	constexpr pointer _address(const_iterator i) {
-		static_assert( std::is_same<const_iterator, const_pointer>{},
-		               "Requires const_iterator = const_pointer" );
-		return const_cast<pointer>(i);
-	}
-
-	constexpr pointer _remcv(const_iterator i) {
-		static_assert( std::is_same<const_iterator, const_pointer>{},
-		               "Requires const_iterator = const_pointer" );
-		return const_cast<iterator>(i);
-	}
-
 public:
+
+	template <typename... Args>
+	constexpr void emplace_back( Args&&... args ) {
+		_emplace_back( 0, std::forward<Args>(args)... );
+	}
 
 	constexpr void push_back( value_type const& v ) {
 		_push_back(v);
@@ -271,7 +285,7 @@ public:
 	}
 
 	template <typename InputIt>
-	constexpr requires<isInputIterator<InputIt>, iterator>
+	constexpr require<isInputIterator<InputIt>, iterator>
 	insert( const_iterator pos, InputIt first, InputIt last ) {
 		return _insert(_remcv(pos), first, last,
 		               typename std::iterator_traits<InputIt>::iterator_category());
@@ -300,7 +314,7 @@ public:
 	}
 
 	template <class InputIt>
-	constexpr requires<isInputIterator<InputIt>>
+	constexpr require<isInputIterator<InputIt>>
 	assign(InputIt first, InputIt last) {
 		clear();
 		while (first != last)
