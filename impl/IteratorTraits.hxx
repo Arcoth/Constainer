@@ -20,7 +20,7 @@ namespace Constainer {
 		struct hasIterCategoryConvTo : std::false_type {};
 		template <typename I, typename C>
 		struct hasIterCategoryConvTo<I, C,
-			requires<std::is_convertible<
+			require<std::is_convertible<
 				typename std::iterator_traits<I>::iterator_category, C
 			>>>
 			: std::true_type {};
