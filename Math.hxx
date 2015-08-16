@@ -29,7 +29,7 @@ CONSTAINER_PURE_CONST constexpr T signum(T x) {
 }
 
 template <typename T>
-CONSTAINER_PURE_CONST constexpr requires<std::is_arithmetic<T>, T>
+CONSTAINER_PURE_CONST constexpr require<std::is_arithmetic<T>, T>
 abs(T i) {
 	// Works for infty, and -0.: Returns --0. = +0.
 	return i>0? i : -i;
@@ -64,7 +64,7 @@ CONSTAINER_PURE_CONST constexpr Float safeMul( Float lhs, Float rhs ) {
 }
 
 template <typename Float>
-CONSTAINER_PURE_CONST constexpr requires<std::is_arithmetic<Float>, Float>
+CONSTAINER_PURE_CONST constexpr require<std::is_arithmetic<Float>, Float>
 pow(Float f, int e) {
 	if (e==0)
 		return 1;
@@ -86,8 +86,7 @@ pow(Float f, int e) {
 }
 
 
-/**< The day on which we look forward to using 512 bit integers is yet to come */
-CONSTAINER_PURE_CONST constexpr std::uint8_t popcount( std::uint64_t v ) {
+CONSTAINER_PURE_CONST constexpr unsigned popcount( std::uint64_t v ) {
 	#if defined __clang__ || defined __GNUG__
 		return __builtin_popcountll(v);
 	#else
@@ -114,8 +113,7 @@ CONSTAINER_PURE_CONST constexpr std::uint8_t popcount( std::uint64_t v ) {
 	#endif
 }
 
-/**< The day on which we look forward to using 512 bit integers is yet to come */
-CONSTAINER_PURE_CONST constexpr std::uint8_t count_trailing( std::uint64_t v ) {
+CONSTAINER_PURE_CONST constexpr unsigned count_trailing( std::uint64_t v ) {
 	#if defined __clang__ || defined __GNUG__
 		return __builtin_ctzll(v);
 	#else

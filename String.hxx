@@ -212,7 +212,7 @@ public:
 	}
 	template <class InputIt>
 	constexpr auto assign(InputIt first, InputIt last)
-		-> requires<isInputIterator<InputIt>, BasicString&> {
+		-> require<isInputIterator<InputIt>, BasicString&> {
 		_base::assign(first, last);
 		return *this;
 	}
@@ -252,7 +252,7 @@ public:
 	}
 
 	template <typename InputIt>
-	constexpr requires<isInputIterator<InputIt>, BasicString&>
+	constexpr require<isInputIterator<InputIt>, BasicString&>
 	insert( const_iterator pos, InputIt first, InputIt last ) {
 		_base::insert(pos, first, last);
 		return *this;
@@ -288,7 +288,7 @@ public:
 		return append( str, traits_type::length(str) );
 	}
 	template <typename InputIt>
-	constexpr requires<isInputIterator<InputIt>, BasicString&>
+	constexpr require<isInputIterator<InputIt>, BasicString&>
 	append( InputIt first, InputIt last ) {
 		return this->insert(this->end(), first, last);
 	}
@@ -425,7 +425,7 @@ private:
 public:
 
 	template <typename InputIt>
-	constexpr requires<isInputIterator<InputIt>, BasicString&>
+	constexpr require<isInputIterator<InputIt>, BasicString&>
 	replace(const_iterator first, const_iterator last, InputIt first2, InputIt last2) {
 		auto copy = *this;
 		// To ensure the strong exception guarantee.

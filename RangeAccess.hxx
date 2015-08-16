@@ -17,11 +17,11 @@ namespace Constainer {
 
 		template <typename T>
 		constexpr auto _begin(rank<0>, T&& t)
-		-> decltype(requires_not<assocWithNS<T>>{}, begin(std::forward<T>(t)))
+		-> decltype(require_not<assocWithNS<T>>{}, begin(std::forward<T>(t)))
 		                                    {return begin(std::forward<T>(t));}
 		template <typename T>
 		constexpr auto   _end(rank<0>, T&& t)
-		-> decltype(requires_not<assocWithNS<T>>{}, end(std::forward<T>(t)))
+		-> decltype(require_not<assocWithNS<T>>{}, end(std::forward<T>(t)))
 		                                    {return end(std::forward<T>(t));}
 
 		template <typename T>
@@ -64,11 +64,11 @@ namespace Constainer {
 	/*! decayed_begin/_end behave similar to begin/end, but return a pointer to the
 	    first underlying element if the argument is a multi-dimensional array. */
 
-	template <typename T, requires<std::is_array<T>, std::size_t> N>
+	template <typename T, require<std::is_array<T>, std::size_t> N>
 	constexpr std::remove_all_extents_t<T>* decayed_begin(T(&c)[N])
 	{ return decayed_begin(*c); }
 
-	template <typename T, requires<std::is_array<T>, std::size_t> N>
+	template <typename T, require<std::is_array<T>, std::size_t> N>
 	constexpr std::remove_all_extents_t<T>* decayed_end  (T(&c)[N])
 	{ return decayed_end  (*c); }
 
