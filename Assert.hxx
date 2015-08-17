@@ -2,9 +2,7 @@
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
-
-#ifndef ASSERT_HXX_INCLUDED
-#define ASSERT_HXX_INCLUDED
+#pragma once
 
 #include <stdexcept>
 
@@ -28,5 +26,3 @@ constexpr void Assert(bool b, char const* = nullptr) {
 }
 
 }
-
-#endif // ASSERT_HXX_INCLUDED

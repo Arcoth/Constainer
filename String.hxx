@@ -3,8 +3,7 @@
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
 
-#ifndef STRING_HXX_INCLUDED
-#define STRING_HXX_INCLUDED
+#pragma once
 
 #include "impl/BasicVector.hxx"
 
@@ -826,5 +825,3 @@ constexpr std::size_t hash(BasicString<char, N, Traits> const& str) {
 }
 
 }
-
-#endif // STRING_HXX_INCLUDED

@@ -2,8 +2,7 @@
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
-#ifndef VECTOR_HXX_INCLUDED
-#define VECTOR_HXX_INCLUDED
+#pragma once
 
 #include "impl/BasicVector.hxx"
 
@@ -59,5 +58,3 @@ template <typename T, std::size_t N>
 using Vector = BasicVector<T, N, DefaultCopyTraits<T>>;
 
 }
-
-#endif // VECTOR_HXX_INCLUDED

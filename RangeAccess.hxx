@@ -2,8 +2,7 @@
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
-#ifndef RANGEACCESS_HXX_INCLUDED
-#define RANGEACCESS_HXX_INCLUDED
+#pragma once
 
 #include "Iterator.hxx"
 
@@ -83,5 +82,3 @@ namespace Constainer {
 	template <typename T, std::size_t N>
 	constexpr std::size_t size(T (&)[N]) {return N;}
 }
-
-#endif // RANGEACCESS_HXX_INCLUDED

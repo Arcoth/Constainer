@@ -2,8 +2,7 @@
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
-#ifndef FUNDAMENTAL_HXX_INCLUDED
-#define FUNDAMENTAL_HXX_INCLUDED
+#pragma once
 
 #include <type_traits>
 #include <utility>
@@ -90,5 +89,3 @@ template <typename T>
 std::true_type _assocTester(T, int);
 
 }
-
-#endif // FUNDAMENTAL_HXX_INCLUDED

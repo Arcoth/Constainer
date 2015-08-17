@@ -2,8 +2,7 @@
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
-#ifndef TRAITS_HXX_INCLUDED
-#define TRAITS_HXX_INCLUDED
+#pragma once
 
 #include "Fundamental.hxx"
 
@@ -43,5 +42,3 @@ namespace Constainer {
 	/*template <typename I>
 	using isContiguousIterator = detail::hasIterCategoryConvTo<I, std::contiguous_iterator_tag>;*/
 }
-
-#endif // TRAITS_HXX_INCLUDED

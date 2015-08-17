@@ -2,8 +2,7 @@
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
-#ifndef PARSER_HXX_INCLUDED
-#define PARSER_HXX_INCLUDED
+#pragma once
 
 #include "String.hxx"
 #include "Math.hxx"
@@ -313,5 +312,3 @@ constexpr auto strToFloat( char const* str, std::size_t* pos = 0 )
 
 
 }
-
-#endif // PARSER_HXX_INCLUDED

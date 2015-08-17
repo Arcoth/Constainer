@@ -2,8 +2,7 @@
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
-#ifndef CHUNKALLOC_HXX_INCLUDED
-#define CHUNKALLOC_HXX_INCLUDED
+#pragma once
 
 #include "Array.hxx"
 #include "Bitset.hxx"
@@ -64,5 +63,3 @@ public:
 };
 
 }
-
-#endif // CHUNKALLOC_HXX_INCLUDED

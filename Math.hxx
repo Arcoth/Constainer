@@ -2,8 +2,7 @@
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
-#ifndef MATH_HXX_INCLUDED
-#define MATH_HXX_INCLUDED
+#pragma once
 
 #include "impl/Fundamental.hxx"
 
@@ -132,6 +131,3 @@ CONSTAINER_PURE_CONST constexpr unsigned count_trailing( std::uint64_t v ) {
 }
 
 }
-
-
-#endif // MATH_HXX_INCLUDED

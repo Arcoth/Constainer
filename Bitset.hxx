@@ -2,8 +2,7 @@
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
-#ifndef BITSET_HXX_INCLUDED
-#define BITSET_HXX_INCLUDED
+#pragma once
 
 #include "Algorithms.hxx"
 #include "Math.hxx"
@@ -194,5 +193,3 @@ Bitset<N> operator^( const Bitset<N>& lhs, const Bitset<N>& rhs ) {
 }
 
 }
-
-#endif // BITSET_HXX_INCLUDED

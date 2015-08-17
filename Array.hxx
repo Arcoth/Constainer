@@ -2,8 +2,7 @@
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
-#ifndef ARRAY_HXX_INCLUDED
-#define ARRAY_HXX_INCLUDED
+#pragma once
 
 #include "Algorithms.hxx"
 #include "Iterator.hxx"
@@ -103,5 +102,3 @@ constexpr bool operator>=( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
 }
 
 }
-
-#endif
