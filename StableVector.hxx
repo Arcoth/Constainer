@@ -7,6 +7,7 @@
 #include "impl/Fundamental.hxx"
 #include "Vector.hxx"
 #include "ChunkPool.hxx"
+#include "Operators.hxx"
 
 namespace Constainer {
 
@@ -58,7 +59,9 @@ private:
 	};
 
 	template <bool _const>
-	class _iterator_base {
+	class _iterator_base : RandomAccessIteratable<_iterator_base<_const>,
+	                                              std::conditional_t<_const, const_pointer  , pointer  >,
+	                                              std::conditional_t<_const, const_reference, reference>, std::ptrdiff_t> {
 	public:
 		using difference_type   = std::ptrdiff_t;
 		using pointer           = std::conditional_t<_const, StableVector::const_pointer, StableVector::pointer>;
@@ -90,37 +93,16 @@ private:
 
 		constexpr _iterator_base& operator+=(difference_type d) {return *this = _iterator_base(_node->up[ d]);}
 		constexpr _iterator_base& operator-=(difference_type d) {return *this = _iterator_base(_node->up[-d]);}
-		constexpr _iterator_base operator+(difference_type d) {return _iterator_base(_node->up[ d]);}
-		constexpr _iterator_base operator-(difference_type d) {return _iterator_base(_node->up[-d]);}
-		friend constexpr _iterator_base operator+(difference_type d, _iterator_base i) {return i+d;}
-
-		constexpr reference operator[](difference_type n) {
-			return *(*this + n);
-		}
 
 		constexpr _iterator_base& operator++() {return *this += 1;}
 		constexpr _iterator_base& operator--() {return *this -= 1;}
-		constexpr _iterator_base operator++(int) {
-			auto tmp = *this;
-			++*this;
-			return tmp;
-		}
-		constexpr _iterator_base operator--(int) {
-			auto tmp = *this;
-			--*this;
-			return tmp;
-		}
 
 		constexpr difference_type operator-(_iterator_base rhs) {
 			return _node->up - rhs._node->up;
 		}
 
 		constexpr bool operator==(_iterator_base rhs) const {return _node == rhs._node;}
-		constexpr bool operator!=(_iterator_base rhs) const {return _node != rhs._node;}
 		constexpr bool operator <(_iterator_base rhs) const {return _node->up < rhs._node->up;}
-		constexpr bool operator >(_iterator_base rhs) const {return _node->up > rhs._node->up;}
-		constexpr bool operator<=(_iterator_base rhs) const {return _node->up <= rhs._node->up;}
-		constexpr bool operator>=(_iterator_base rhs) const {return _node->up >= rhs._node->up;}
 	};
 
 	constexpr _pointer_iter _piter_of(const_iterator it) {return it._node->up;}
