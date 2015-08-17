@@ -2,6 +2,8 @@
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
+#pragma once
+
 #include "impl/Fundamental.hxx"
 #include "Vector.hxx"
 #include "ChunkPool.hxx"
@@ -64,7 +66,7 @@ private:
 		using value_type        = StableVector::value_type;
 		using iterator_category = std::random_access_iterator_tag;
 
-private:
+	private:
 		Node* _node;
 
 		friend StableVector;
@@ -88,8 +90,8 @@ private:
 
 		constexpr _iterator_base& operator+=(difference_type d) {return *this = _iterator_base(_node->up[ d]);}
 		constexpr _iterator_base& operator-=(difference_type d) {return *this = _iterator_base(_node->up[-d]);}
-		constexpr _iterator_base operator+(difference_type d) {return _node->up[ d];}
-		constexpr _iterator_base operator-(difference_type d) {return _node->up[-d];}
+		constexpr _iterator_base operator+(difference_type d) {return _iterator_base(_node->up[ d]);}
+		constexpr _iterator_base operator-(difference_type d) {return _iterator_base(_node->up[-d]);}
 		friend constexpr _iterator_base operator+(difference_type d, _iterator_base i) {return i+d;}
 
 		constexpr reference operator[](difference_type n) {
@@ -121,9 +123,7 @@ private:
 		constexpr bool operator>=(_iterator_base rhs) const {return _node->up >= rhs._node->up;}
 	};
 
-	constexpr _pointer_iter _piter_of(const_iterator it) {
-		return it._node->up;
-	}
+	constexpr _pointer_iter _piter_of(const_iterator it) {return it._node->up;}
 
 public:
 
@@ -150,13 +150,18 @@ private:
 	constexpr void _append(StableVector const& s) {
 		insert(end(), s.begin(), s.end());
 	}
+	constexpr void _append(StableVector && s) {
+		insert(end(), Constainer::make_move_iterator(s.begin()),
+		              Constainer::make_move_iterator(s.end()));
+		s.clear();
+	}
 
 public:
 
 	constexpr void clear() {_pool.free(); _pointers.clear();}
 
-	constexpr size_type size() const {return _pointers.size();}
-	constexpr bool     empty() const {return _pointers.empty();}
+	constexpr size_type size() const {return _pointers.size()-1;}
+	constexpr bool     empty() const {return size() == 0;}
 
 	constexpr       reference front()       {return _pointers.front()->value;}
 	constexpr       reference  back()       {return _pointers. back()->value;}
@@ -181,13 +186,14 @@ public:
 	constexpr StableVector(std::initializer_list<value_type> ilist) :
 		StableVector(ilist.begin(), ilist.end()) {}
 
-	constexpr StableVector(StableVector const& s) {
-		_append(s);
-	}
+	constexpr StableVector(StableVector const& s) {_append(s);}
+	constexpr StableVector(StableVector && s) {_append(std::move(s));}
 
 	constexpr StableVector& operator=(StableVector const& s) {
-		clear();
-		_append(s);
+		clear(); _append(s);
+	}
+	constexpr StableVector& operator=(StableVector && s) {
+		clear(); _append(std::move(s));
 	}
 
 private:
@@ -271,7 +277,6 @@ public:
 
 	constexpr iterator erase(const_iterator first, const_iterator last) {
 		auto pfirst=_piter_of(first), plast=_piter_of(last);
-		auto dist = plast-pfirst;
 		while (pfirst != plast) _pool.free(*pfirst++);
 		/* pfirst = */ _pointers.erase(pfirst, plast);
 		for (; pfirst != _pointers.end(); ++pfirst)
@@ -290,8 +295,8 @@ public:
 	constexpr void resize(size_type s) {
 		if (s < size())
 			erase(end()-(size()-s), end());
-		else if (s > size())
-			_insert_n(it, s-size());
+		else
+			_insert_n(end(), s-size());
 	}
 
 };
