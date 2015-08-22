@@ -50,6 +50,18 @@ constexpr auto prev( InputIt it, typename std::iterator_traits<InputIt>::differe
 	return next(it, -n);
 }
 
+namespace detail {
+/**< Primary overload. This should be specialized for containers to improve performance. */
+template <typename Container, typename ConstIterator>
+constexpr auto unconstifyIterator( Container& c, ConstIterator cit ) {
+	return c.begin() + (cit - c.cbegin());
+}
+template <typename Container, typename T>
+constexpr auto unconstifyIterator( Container&, T const* ptr ) {
+	return const_cast<T*>(ptr);
+}
+}
+
 template<typename Iterator>
 class reverse_iterator
 {
