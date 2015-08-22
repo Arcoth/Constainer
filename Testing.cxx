@@ -8,6 +8,9 @@
 #include "Vector.hxx"
 #include "Bitset.hxx"
 #include "ChunkPool.hxx"
+#include "StableVector.hxx"
+#include "FlatSet.hxx"
+#include "FlatMap.hxx"
 
 // Check ADL range access
 static_assert( std::is_same<decltype(begin(Constainer::String())), Constainer::String::iterator>{} );
@@ -15,14 +18,9 @@ static_assert( *Constainer::next(Constainer::begin(std::initializer_list<int>{1,
 
 using namespace Constainer;
 
-static_assert(sizeof(String64 )  ==   64);
-static_assert(sizeof(String256)  ==  256);
-static_assert(sizeof(String512)  ==  512);
-static_assert(sizeof(String1024) == 1024);
-
 constexpr Array<int, 10> a {{1, 2, 3, 4, 5}};
 constexpr Array<int, 10> a2{{1, 2, 3, 4, 5}};
-static_assert( a == a2, "" );
+static_assert( a == a2 );
 
 constexpr Array<int, 10> a3{{1, 2}};
 constexpr Array<int, 10> a4{{1, 2, 3}};
@@ -32,7 +30,7 @@ static_assert( a3 < a4 && a4 < a5 );
 constexpr auto d() {
 	ChunkPool<int, 17> c;
 	int* ptr = c.grab();
-	Assert( c.used() == 1 );
+	assert( c.used() == 1 );
 	c.free(ptr);
 	return 0;
 }
@@ -41,13 +39,13 @@ static_assert( d() == 0 );
 constexpr auto e() {
 	Bitset<55> b;
 	b.set(45);
-	Assert(b.test(45) && b.count() == 1 && b.any() && b.leading(0) == 45);
+	assert(b.test(45) && b.count() == 1 && b.any() && b.leading(0) == 45);
 	b.flip(45);
-	Assert(b.count() == 0 && b.none() && b.leading(0) == 55);
-	Assert(b.flip().count() == 55 && b.all() && b.leading(0) == 0 && b.leading(1) == 55);
-	Assert(b.reset(7).reset(54).count() == 53 && b.leading(1) == 7);
+	assert(b.count() == 0 && b.none() && b.leading(0) == 55);
+	assert(b.flip().count() == 55 && b.all() && b.leading(0) == 0 && b.leading(1) == 55);
+	assert(b.reset(7).reset(54).count() == 53 && b.leading(1) == 7);
 	b[1] = ~b[10].flip();
-	Assert(b[1] == true && b[10] == false);
+	assert(b[1] == true && b[10] == false);
 	return 0;
 }
 static_assert( e() == 0 );
@@ -99,28 +97,55 @@ constexpr auto h() {
 	// "4*****xxxrld!"
 	t.insert(0, "123");
 	// "1234*****xxxrld!"
-	Assert(t.find('*') == 4);
-	Assert(t.rfind('*') == 8);
+	assert(t.find('*') == 4);
+	assert(t.rfind('*') == 8);
 	t = t.substr(2);
 	//! "3 4 * * * * * x x x r  l  d  ! "
 	//!  0 1 2 3 4 5 6 7 8 9 10 11 12 13
 
-	Assert(t.rfind("***", 6) == 4);
-	Assert(t.rfind("***", 5) == 3);
-	Assert(t.rfind("***", 3) == String::npos);
+	assert(t.rfind("***", 6) == 4);
+	assert(t.rfind("***", 5) == 3);
+	assert(t.rfind("***", 3) == String::npos);
 
-	Assert(t.find("") == 0);
-	Assert(t.rfind("*", 6) == 6);
+	assert(t.find("") == 0);
+	assert(t.rfind("*", 6) == 6);
 
-	Assert(t.find_first_of("-.,") == String::npos);
-	Assert(t.find_first_of("x*4") == 1);
-	Assert(t.find_last_of("x*4") == 9);
-	Assert(t.find_first_not_of("34*") == 7);
-	Assert(t.find_last_not_of("34*") == 13);
+	assert(t.find_first_of("-.,") == String::npos);
+	assert(t.find_first_of("x*4") == 1);
+	assert(t.find_last_of("x*4") == 9);
+	assert(t.find_first_not_of("34*") == 7);
+	assert(t.find_last_not_of("34*") == 13);
 
 	return t;
 }
 static_assert( h() == "34*****xxxrld!" );
+
+constexpr auto i() {
+	StableVector<int, ChunkPool<int, 64>> s{1, 2, 3, 5};
+	s.insert(s.end()-1, 4);
+	// 1 2 3 4 5
+	auto it = s.end()-1;
+	s.erase(s.begin()+1, s.begin()+3);
+	// 1 4 5
+	s.push_back(*it);
+	// 1 4 5 5
+	int i=0;
+	for (auto& j : makeIteratorRange(rbegin(s), rend(s)))
+		j += ++i;
+	// 4, 7, 7, 6
+	return s;
+}
+// TODO: Report this bug
+// static_assert( i() == StableVector<int, ChunkPool<int, 50>>{4, 7, 7, 6} );
+
+constexpr auto j() {
+	FlatMap<int, char, 64, std::greater<>> map(ordered_unique_range, {{3, 'a'}, {2, 'b'}});
+	assert( map.insert_or_assign(7, 'd').second );
+	map[2] = 'e';
+	map.insert(ordered_unique_range, {{561, 'd'}, {3, 'w'}, {1,'c'}});
+	return map;
+}
+static_assert( j() == FlatMap<int, char, 64, std::greater<>>{{561, 'd'}, {7, 'd'}, {3, 'a'}, {2, 'e'}, {1, 'c'}} );
 
 static_assert( strToInt<int>(" 6849.") == 6849 );
 static_assert( strToInt<signed char>(" -128aefws") == -128 );
