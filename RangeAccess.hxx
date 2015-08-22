@@ -81,4 +81,15 @@ namespace Constainer {
 
 	template <typename T, std::size_t N>
 	constexpr std::size_t size(T (&)[N]) {return N;}
+
+	/**< IteratorRange, useful in e.g. range-based for with two iters available */
+	template <typename I>
+	struct IteratorRange {I first, last;};
+
+	template <typename I>
+	constexpr IteratorRange<I> makeIteratorRange(I first, I last) {return {first, last};}
+	template <typename I>
+	constexpr I begin(IteratorRange<I> irange) {return irange.first;}
+	template <typename I>
+	constexpr I end(IteratorRange<I> irange) {return irange.last;}
 }
