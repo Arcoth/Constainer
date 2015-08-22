@@ -71,6 +71,13 @@ void forceError() {
 template <typename T>
 void forceError(T);
 
+template <typename, typename, typename=void>
+struct has_is_transparent {};
+
+template<typename Compare, typename T>
+struct has_is_transparent<Compare, T, std::void_t<typename Compare::is_transparent>>
+{ using type = T; };
+
 }
 
 /**< assocWithNS determines whether Constainer is an associated namespace of T.
