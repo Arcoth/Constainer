@@ -19,10 +19,6 @@ constexpr void AssertExcept(bool b, Args&&... args) {
 		throw Except(std::forward<Args>(args)...);
 }
 
-/*! If you're getting an error message about … not being usable in a constant expression here,
-    go back in the call stack for this error and check message and context */
-constexpr void Assert(bool b, char const* = nullptr) {
-	assert(b); //! LWG 2234
-}
+//! LWG 2234 guarantees that assert produces a constant subexpression if the argument is one.
 
 }
