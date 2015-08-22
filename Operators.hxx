@@ -11,7 +11,7 @@ namespace Constainer {
 		constexpr friend bool operator!=(T const& lhs, T const& rhs) {return !(lhs == rhs);}
 	};
 	template <typename T>
-	struct LessThanComparable : EqualityComparable<T> {
+	struct LessThanComparable {
 		constexpr friend bool operator>(T const& lhs, T const& rhs)  {return   rhs < lhs;}
 		constexpr friend bool operator<=(T const& lhs, T const& rhs) {return !(rhs < lhs);}
 		constexpr friend bool operator>=(T const& lhs, T const& rhs) {return !(lhs < rhs);}
@@ -38,13 +38,13 @@ namespace Constainer {
 	template <typename T, typename P>
 	struct Dereferencable {
 		constexpr P operator->() const {
-			return Constainer::addressof(*static_cast<const T&>(*this));
+			return const_cast<P>(Constainer::addressof(*static_cast<const T&>(*this)));
 		}
 	};
 	template <typename T, typename I, typename R>
 	struct Indexable {
 		constexpr R operator[](I n) const {
-			return *(static_cast<const T&>(*this) + n);
+			return const_cast<R>(*(static_cast<const T&>(*this) + n));
 		}
 	};
 	template <typename T>
