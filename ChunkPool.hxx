@@ -26,7 +26,7 @@ public:
 	using typename _base::reference;
 	using typename _base::const_reference;
 
-	constexpr std::size_t max_size() const {return _base::size();}
+	static constexpr size_type max_size() {return _base::size();}
 
 private:
 	Bitset<N> _used;
@@ -57,7 +57,7 @@ public:
 	}
 	constexpr void free( const_pointer p ) {
 		auto i = p-_base::data();
-		Assert( _used.test(i) );
+		assert( _used.test(i) );
 		_used.reset(i);
 	}
 };
