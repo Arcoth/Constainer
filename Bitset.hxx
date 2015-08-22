@@ -71,11 +71,11 @@ public:
 	};
 
 	constexpr reference operator[](size_type pos) {
-		Assert(pos < size());
+		assert(pos < size());
 		return {this, pos};
 	}
 	constexpr bool operator[](size_type pos) const {
-		Assert(pos < size());
+		assert(pos < size());
 		return test(pos);
 	}
 
@@ -93,7 +93,7 @@ public:
 	constexpr Bitset() : _storage{} {}
 
 	constexpr bool test(size_type i) const {
-		Assert(i < size());
+		assert(i < size());
 		return _chunkof(i) & _mask_chunkof(i);
 	}
 
@@ -110,7 +110,7 @@ public:
 		return *this;
 	}
 	constexpr Bitset& set(size_type pos, bool value = true) {
-		Assert(pos < size());
+		assert(pos < size());
 		_set(pos, value);
 		return *this;
 	}
@@ -128,17 +128,17 @@ public:
 		return *this;
 	}
 	constexpr Bitset& flip(size_type pos) {
-		Assert(pos < size());
+		assert(pos < size());
 		_flip(pos);
 		return *this;
 	}
 
 	constexpr Bitset& reset() {
-		Constainer::fill(_storage, Constainer::size(_storage), 0);
+		Constainer::fill(Constainer::begin(_storage), Constainer::end(_storage), 0);
 		return *this;
 	}
 	constexpr Bitset& reset(size_type pos) {
-		Assert(pos < size());
+		assert(pos < size());
 		_reset(pos);
 		return *this;
 	}
