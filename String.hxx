@@ -164,7 +164,7 @@ public:
 	constexpr auto c_str() const {return data();}
 
 	template <size_type OtherN>
-	constexpr BasicString(ThisResized<OtherN> const& str, size_type pos, size_type count=npos) :
+	constexpr BasicString(ThisResized<OtherN> const& str, size_type pos=0, size_type count=npos) :
 		BasicString(str.data()+pos, std::min(str.size()-pos, count)) {}
 
 	constexpr BasicString(const_pointer str, size_type s) {
@@ -275,13 +275,13 @@ public:
 	template <std::size_t OtherN>
 	constexpr BasicString& append( ThisResized<OtherN> const& str,
 	                               size_type pos, size_type len=npos ) {
-		AssertExcept<std::out_of_range>(pos < str.size(), "Invalid position!");
-		len = std::min(len, str.size()-pos-1);
-		return this->insert( this->size(), str._data()+pos, len );
+		AssertExcept<std::out_of_range>(pos <= str.size(), "Invalid position!");
+		len = std::min(len, str.size()-pos);
+		return this->insert( this->size(), str.data()+pos, len );
 	}
 	template <std::size_t OtherN>
 	constexpr BasicString& append( ThisResized<OtherN> const& str ) {
-		return append( str, 0, npos );
+		return append( str, 0 );
 	}
 	constexpr BasicString& append( const_pointer str ) {
 		return append( str, traits_type::length(str) );
@@ -609,21 +609,15 @@ constexpr void swap( BasicString<Char, N1, Traits1>& lhs, BasicString<Char, N2, 
 	lhs.swap(rhs);
 }
 
-/* The total size of Stringxxx is xxx bytes.The underlying buffer is smaller.
-   It is possible to write a TMP-program that binary recursively iterates through all
-   possible specializations and picks the one with the size desired. But this should
-   work, considering the alignment conventions:
-*/
-using String64   = BasicString<char,   63-sizeof(std::size_t)>;
-using String256  = BasicString<char,  255-sizeof(std::size_t)>;
-using String512  = BasicString<char,  511-sizeof(std::size_t)>;
-using String1024 = BasicString<char, 1023-sizeof(std::size_t)>;
+using String64   = BasicString<char,   64>;
+using String256  = BasicString<char,  256>;
+using String512  = BasicString<char,  512>;
+using String1024 = BasicString<char, 1024>;
 
 using String = String256;
 
-constexpr String64  operator"" _cstr  ( char const* str, std::size_t len ) {return {str, len};}
-constexpr String256 operator"" _lcstr ( char const* str, std::size_t len ) {return {str, len};}
-constexpr String512 operator"" _xlcstr( char const* str, std::size_t len ) {return {str, len};}
+constexpr String256 operator"" _cstr ( char const* str, std::size_t len ) {return {str, len};}
+constexpr String512 operator"" _lcstr( char const* str, std::size_t len ) {return {str, len};}
 
 }
 
