@@ -39,6 +39,9 @@ namespace Constainer {
 	template <typename I, typename T>
 	using hasValueType = std::is_same<typename std::iterator_traits<I>::value_type, T>;
 
+	template <typename I>
+	using iteratorCategory = typename std::iterator_traits<I>::iterator_category;
+
 	/*template <typename I>
 	using isContiguousIterator = detail::hasIterCategoryConvTo<I, std::contiguous_iterator_tag>;*/
 }
