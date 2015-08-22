@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Assert.hxx"
 #include "Iterator.hxx"
 
 #include <functional>
@@ -18,7 +19,7 @@ struct NegateFunctor {
 	constexpr NegateFunctor(F const& f) : f(f) {}
 
 	template <typename... Args>
-	constexpr bool operator()(Args&&... args) {
+	constexpr bool operator()(Args&&... args) const {
 		return !f(std::forward<Args>(args)...);
 	}
 };
@@ -26,6 +27,11 @@ template <typename F>
 constexpr auto negateFunctor(F const& f) {
 	return NegateFunctor<F>(f);
 }
+
+struct IdentityFunctor {
+	template <typename T>
+	constexpr decltype(auto) operator()(T&& t) const {return std::forward<T>(t);}
+};
 
 namespace detail {
 	template <typename T>
@@ -105,6 +111,12 @@ constexpr auto move_n(InputIt first, SizeType count, OutputIt out) {
 	return Constainer::copy_n(make_move_iterator(first), count, out);
 }
 
+template <typename BiDirIt>
+constexpr void reverse(BiDirIt first, BiDirIt last) {
+	while ((first != last) && (first != --last))
+		Constainer::swap(*first++, *last);
+}
+
 template <typename OutputIt, typename T>
 constexpr auto fill(OutputIt first, OutputIt last, T const& value) {
 	while (first != last)
@@ -158,6 +170,34 @@ constexpr T accumulate(InputIt first, InputIt last, T init, BinaryOp op)
 template <typename InputIt, typename T>
 constexpr T accumulate(InputIt first, InputIt last, T init) {
 	Constainer::accumulate(first, last, init, std::plus<>());
+}
+
+template <typename InputIt, typename T>
+constexpr typename std::iterator_traits<InputIt>::difference_type count(InputIt first, InputIt last, T const& val)
+{
+	typename std::iterator_traits<InputIt>::difference_type ret = 0;
+	while (first != last)
+		if (*first++ == val)
+			++ret;
+	return ret;
+}
+template <typename InputIt, typename T>
+constexpr typename std::iterator_traits<InputIt>::difference_type count_not(InputIt first, InputIt last, T const& val)
+{
+	typename std::iterator_traits<InputIt>::difference_type ret = 0;
+	while (first != last)
+		if (*first++ != val)
+			++ret;
+	return ret;
+}
+template <typename InputIt, typename UnaryPredicate>
+constexpr typename std::iterator_traits<InputIt>::difference_type count_if(InputIt first, InputIt last, UnaryPredicate p)
+{
+	typename std::iterator_traits<InputIt>::difference_type ret = 0;
+	while (first != last)
+		if (p(*first++))
+			ret++;
+	return ret;
 }
 
 template <typename InputIt1, typename InputIt2, typename Comp>
@@ -338,12 +378,12 @@ constexpr auto equal_range(ForwardIt first, ForwardIt last, const T& value) {
 	return Constainer::equal_range(first, last, value, std::less<>());
 }
 
-template < typename InputIt, typename UnaryPred>
+template <typename InputIt, typename UnaryPred>
 constexpr bool all_of(InputIt first, InputIt last, UnaryPred pred) {
 	return Constainer::find_if_not(first, last, pred) == last;
 }
 
-template < typename InputIt, typename UnaryPred>
+template <typename InputIt, typename UnaryPred>
 constexpr bool any_of(InputIt first, InputIt last, UnaryPred pred) {
 	return Constainer::find_if(first, last, pred) != last;
 }
@@ -353,5 +393,28 @@ constexpr bool none_of(InputIt first, InputIt last, UnaryPred pred) {
 	return Constainer::find_if(first, last, pred) == last;
 }
 
+template <typename Container, typename BiDirPosIt, typename BiDirValueIt>
+constexpr void insert_ordered_at(Container& container, typename Container::size_type left, BiDirValueIt last_value,
+                               BiDirPosIt last_pos)
+{
+	constexpr typename Container::size_type empty_pos(-1);
+	const auto orig_size = container.size();
+	AssertExcept<std::out_of_range>(container.size() < container.max_size() - typename Container::size_type(left),
+	                                "Too many values to insert");
+	container.resize(container.size() + left);
+	auto last = container.begin() + orig_size;
+	for (; left != 0; --left) {
+		auto pos = *--last_pos;
+		while (pos == empty_pos) {
+			--last_value;
+			pos = *--last_pos;
+		}
+		AssertExcept<std::out_of_range>( pos <= orig_size, "Invalid position passed!");
+		auto first = container.begin() + pos;
+		Constainer::move_backward(first, last, last+left);
+		first[left-1] = *--last_value;
+		last = first;
+	}
+}
 
 }
