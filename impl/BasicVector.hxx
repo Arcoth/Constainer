@@ -56,6 +56,7 @@ class BasicVector : private Array<T, MaxN+addBufferSize> {
 public:
 	using traits_type = CopyTraits;
 
+	using typename _base::difference_type;
 	using typename _base::size_type;
 	using typename _base::value_type;
 	using typename _base::iterator;
@@ -98,7 +99,7 @@ protected:
 	}
 
 	constexpr void _createInsertionSpace(const_iterator pos, size_type len) {
-		Assert(pos <= end());
+		assert(pos <= end());
 		_verifiedSizeInc(len);
 		if (pos != end()-len)
 			// TODO: Implement move_backward that uses CopyTraits::assign
@@ -200,10 +201,10 @@ public:
 	constexpr const_reference back() const {return end()[-1];}
 
 	constexpr reference       operator[](size_type s) {
-		Assert(s < size(), "Invalid index!"); return _base::operator[](s);
+		assert(s < size() && "Invalid index!"); return _base::operator[](s);
 	}
 	constexpr const_reference operator[](size_type s) const {
-		Assert(s < size(), "Invalid index!"); return _base::operator[](s);
+		assert(s < size() && "Invalid index!"); return _base::operator[](s);
 	}
 
 private:
@@ -242,13 +243,14 @@ public:
 		_push_back(std::move(v));
 	}
 
-	constexpr void erase( const_iterator first, const_iterator last ) {
+	constexpr iterator erase( const_iterator first, const_iterator last ) {
 		traits_type::move( _address(first), _address(last), end() - last);
 		traits_type::destroy(end() - (last-first), last-first);
 		_size -= last-first;
+		return _remcv(first);
 	}
-	constexpr void erase( const_iterator it ) {
-		erase(it, it+1);
+	constexpr iterator erase( const_iterator it ) {
+		return erase(it, it+1);
 	}
 
 	constexpr void clear() {erase(begin(), end());}
@@ -261,11 +263,15 @@ private:
 		return pos;
 	}
 
+	template <typename InputIt>
+	constexpr iterator _insert_n( iterator pos, size_type n, InputIt first ) {
+		_createInsertionSpace(pos, n);
+		copy_n( first, n, pos );
+		return pos;
+	}
 	template <typename ForwardIt>
 	constexpr iterator _insert( iterator pos, ForwardIt first, ForwardIt last, std::forward_iterator_tag ) {
-		_createInsertionSpace(pos, Constainer::distance(first, last));
-		copy( first, last, pos );
-		return pos;
+		return _insert_n(pos, Constainer::distance(first, last), first);
 	}
 
 	template <typename U>
@@ -287,7 +293,13 @@ public:
 	constexpr require<isInputIterator<InputIt>, iterator>
 	insert( const_iterator pos, InputIt first, InputIt last ) {
 		return _insert(_remcv(pos), first, last,
-		               typename std::iterator_traits<InputIt>::iterator_category());
+		               typename std::iterator_traits<InputIt>::iterator_category{});
+	}
+
+	template <typename InputIt>
+	constexpr require<isInputIterator<InputIt>, iterator>
+	insert( const_iterator pos, size_type n, InputIt first ) {
+		return _insert_n(_remcv(pos), n, first);
 	}
 
 	constexpr iterator insert( const_iterator pos, value_type const& v ) {return _insert(pos, v);}
@@ -320,13 +332,13 @@ public:
 			emplace_back(*first++);
 	}
 
-	constexpr void pop_back() {Assert(!empty(), "Can't pop"); erase(end()-1);}
+	constexpr void pop_back() {assert(not empty() && "Can't pop"); erase(end()-1);}
 
 public:
 
 	template <std::size_t OtherMax, typename OtherTraits, std::size_t addBuffOther>
 	constexpr void swap( BasicVector<value_type, OtherMax, OtherTraits, addBuffOther>& other ) {
-		Assert( other.size() < max_size() && size() < OtherMax, "Swap fails" );
+		AssertExcept<std::out_of_range>( other.size() < max_size() && size() < OtherMax, "Swap fails" );
 
 		auto min = std::min(other.size(), size());
 		// TODO: Use traits_type::assign calls to swap the ranges
