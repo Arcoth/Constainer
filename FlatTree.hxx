@@ -15,8 +15,8 @@
 
 namespace Constainer {
 
-struct ordered_range_t        {} constexpr ordered_range        {};
-struct ordered_unique_range_t {} constexpr ordered_unique_range {};
+struct ordered_range_t                          {} constexpr ordered_range        {};
+struct ordered_unique_range_t : ordered_range_t {} constexpr ordered_unique_range {};
 
 namespace detail {
 	template <typename Compare, typename Value, typename KeyOfValue, typename=void>
@@ -44,10 +44,6 @@ namespace detail {
 			return _comp(KeyOfValue()(lhs), KeyOfValue()(rhs));
 		}
 	};
-}
-
-template <typename Compare, typename Value, typename KeyOfValue>
-using ValueComparator = detail::ValueComparator<Compare, Value, KeyOfValue>;
 
 template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Container>
 class FlatTree : private ValueComparator<Compare, Value, KeyOfValue>
@@ -413,9 +409,9 @@ public:
 
 protected:
 
-	template <typename T, typename Comp>
-	constexpr const_iterator _bound(const_iterator first, const_iterator last,
-	                                T const& key, Comp const& cmp) const {
+	template <typename T>
+	constexpr const_iterator _lower_bound(const_iterator first, const_iterator last, T const& key) const {
+		auto& cmp = _key_comp();
 		size_type count = last-first;
 		while (count > 0) {
 			auto intervall_size = count / 2;
@@ -429,22 +425,29 @@ protected:
 		}
 		return first;
 	}
-
+	template <typename T>
+	constexpr const_iterator _upper_bound(const_iterator first, const_iterator last, T const& key) const {
+		auto& cmp = _key_comp();
+		size_type count = last-first;
+		while (count > 0) {
+			auto intervall_size = count / 2;
+			auto it = first + intervall_size;
+			if (not cmp(key, KeyOfValue()(*it))) {
+				first = ++it;
+				count -= intervall_size + 1;
+			}
+			else
+				count = intervall_size;
+		}
+		return first;
+	}
 	template <typename T>
 	constexpr iterator _lower_bound(const_iterator first, const_iterator last, T const& key) {
-		return unconstifyIterator(_container, _bound(first, last, key,               _key_comp()));
+		return unconstifyIterator(_container, as_const(*this)._lower_bound(first, last, key));
 	}
 	template <typename T>
 	constexpr iterator _upper_bound(const_iterator first, const_iterator last, T const& key) {
-		return _bound(first, last, key, negateFunctor(_key_comp()));
-	}
-	template <typename T>
-	constexpr const_iterator _lower_bound(const_iterator first, const_iterator last, T const& key) const {
-		return _bound(first, last, key,               _key_comp());
-	}
-	template <typename T>
-	constexpr const_iterator _upper_bound(const_iterator first, const_iterator last, T const& key) const {
-		return _bound(first, last, key, negateFunctor(_key_comp()));
+		return unconstifyIterator(_container, as_const(*this)._upper_bound(first, last, key));
 	}
 
 	constexpr std::pair<const_iterator, bool> _unique_find_insertion_spot(const_iterator first, const_iterator last, const_reference val) const {
@@ -486,7 +489,7 @@ protected:
 				return {prev, false};
 
 			else
-			return _unique_find_insertion_spot(first, prev, val);
+				return _unique_find_insertion_spot(first, prev, val);
 
 		}
 		else
@@ -515,7 +518,7 @@ protected:
 
 	/**< Derived from boost::container::flat_tree<>::priv_equal_range. */
 	template <typename T>
-	constexpr std::pair<const_iterator, const_iterator> _equal_range(const_iterator first, const_iterator last, T const& key) const {
+	constexpr _const_iter_pair _equal_range(const_iterator first, const_iterator last, T const& key) const {
 		auto const& key_comp = _key_comp();
 		KeyOfValue key_extract;
 		size_type len = last - first;
@@ -537,9 +540,15 @@ protected:
 		}
 		return {first, first};
 	}
+	template <typename T>
+	constexpr _iter_pair _equal_range(const_iterator first, const_iterator last, T const& key) {
+		auto r = as_const(*this)._equal_range(first, last, key);
+		return {unconstifyIterator(_container, r.first),
+		        unconstifyIterator(_container, r.second)};
+	}
 
 	template <typename T>
-	constexpr std::pair<const_iterator, const_iterator> _lower_bound_range(const_iterator first, const_iterator last, T const& key) const {
+	constexpr _const_iter_pair _lower_bound_range(const_iterator first, const_iterator last, T const& key) const {
 		// Since there can be at most one occurence of the key, we solely need to check whether the lower bound is not at the end
 		// and actually is the key.
 		auto pos = _lower_bound(first, last, key);
@@ -631,4 +640,6 @@ constexpr bool operator<=(FlatTree<Args1...> const& lhs, FlatTree<Args2...> cons
 	return !(lhs > rhs);
 }
 
-}
+} // end namespace Constainer::detail
+
+} // end namespace Constainer
