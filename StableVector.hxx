@@ -12,7 +12,7 @@
 namespace Constainer {
 
 template <typename T, typename Pool>
-class StableVector
+class BasicStableVector
 {
 	struct Node;
 
@@ -81,17 +81,17 @@ private:
 	                                                     std::conditional_t<_const, const_reference, reference>, std::ptrdiff_t> {
 	public:
 		using difference_type   = std::ptrdiff_t;
-		using pointer           = std::conditional_t<_const, StableVector::const_pointer, StableVector::pointer>;
-		using reference         = std::conditional_t<_const, StableVector::const_reference, StableVector::reference>;
-		using value_type        = StableVector::value_type;
+		using pointer           = std::conditional_t<_const, BasicStableVector::const_pointer, BasicStableVector::pointer>;
+		using reference         = std::conditional_t<_const, BasicStableVector::const_reference, BasicStableVector::reference>;
+		using value_type        = BasicStableVector::value_type;
 		using iterator_category = std::random_access_iterator_tag;
 
 	private:
 		Node* _node;
 
-		friend StableVector;
+		friend BasicStableVector;
 
-		friend constexpr _iterator_base<false> unconstifyIterator( StableVector&, _iterator_base c ) {return c;}
+		friend constexpr _iterator_base<false> unconstifyIterator( BasicStableVector&, _iterator_base c ) {return c;}
 
 		constexpr explicit _iterator_base(Node* p) : _node(p) {}
 
@@ -147,10 +147,10 @@ private:
 	_pointer_container _pointers {&_endNode};
 	Node _endNode{{}, _pointers.begin()};
 
-	constexpr void _append(StableVector const& s) {
+	constexpr void _append(BasicStableVector const& s) {
 		insert(end(), s.begin(), s.end());
 	}
-	constexpr void _append(StableVector && s) {
+	constexpr void _append(BasicStableVector && s) {
 		insert(end(), Constainer::make_move_iterator(s.begin()),
 		              Constainer::make_move_iterator(s.end()));
 		s.clear();
@@ -171,28 +171,28 @@ public:
 	constexpr       reference operator[](size_type s)       {return _pointers[s]->value;}
 	constexpr const_reference operator[](size_type s) const {return _pointers[s]->value;}
 
-	constexpr StableVector() = default;
-	constexpr explicit StableVector(size_type s)  {
+	constexpr BasicStableVector() = default;
+	constexpr explicit BasicStableVector(size_type s)  {
 		resize(s);
 	}
-	constexpr StableVector(size_type s, const_reference v)  {
+	constexpr BasicStableVector(size_type s, const_reference v)  {
 		insert(begin(), s, v);
 	}
 	template<typename InputIterator>
-	constexpr StableVector(InputIterator first, InputIterator last) {
+	constexpr BasicStableVector(InputIterator first, InputIterator last) {
 		insert(begin(), first, last);
 	}
 
-	constexpr StableVector(std::initializer_list<value_type> ilist) :
-		StableVector(ilist.begin(), ilist.end()) {}
+	constexpr BasicStableVector(std::initializer_list<value_type> ilist) :
+		BasicStableVector(ilist.begin(), ilist.end()) {}
 
-	constexpr StableVector(StableVector const& s) {_append(s);}
-	constexpr StableVector(StableVector && s) {_append(std::move(s));}
+	constexpr BasicStableVector(BasicStableVector const& s) {_append(s);}
+	constexpr BasicStableVector(BasicStableVector && s) {_append(std::move(s));}
 
-	constexpr StableVector& operator=(StableVector const& s) {
+	constexpr BasicStableVector& operator=(BasicStableVector const& s) {
 		clear(); _append(s);
 	}
-	constexpr StableVector& operator=(StableVector && s) {
+	constexpr BasicStableVector& operator=(BasicStableVector && s) {
 		clear(); _append(std::move(s));
 	}
 
@@ -315,35 +315,38 @@ public:
 };
 
 template <typename T>
-using StableVector128 = StableVector<T, ChunkPool<T, 128>>;
+using StableVector128 = BasicStableVector<T, ChunkPool<T, 128>>;
 template <typename T>
-using StableVector256 = StableVector<T, ChunkPool<T, 256>>;
+using StableVector256 = BasicStableVector<T, ChunkPool<T, 256>>;
 template <typename T>
-using StableVector512 = StableVector<T, ChunkPool<T, 512>>;
+using StableVector512 = BasicStableVector<T, ChunkPool<T, 512>>;
 
 template <typename... A1, typename... A2>
-constexpr bool operator==(StableVector<A1...> const& lhs, StableVector<A2...> const& rhs) {
+constexpr bool operator==(BasicStableVector<A1...> const& lhs, BasicStableVector<A2...> const& rhs) {
 	return lhs.size() == rhs.size() && Constainer::equal(lhs.begin(), lhs.end(), rhs.begin());
 }
 template <typename... A1, typename... A2>
-constexpr bool operator <(StableVector<A1...> const& lhs, StableVector<A2...> const& rhs) {
+constexpr bool operator <(BasicStableVector<A1...> const& lhs, BasicStableVector<A2...> const& rhs) {
 	return Constainer::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 template <typename... A1, typename... A2>
-constexpr bool operator!=(StableVector<A1...> const& lhs, StableVector<A2...> const& rhs) {
+constexpr bool operator!=(BasicStableVector<A1...> const& lhs, BasicStableVector<A2...> const& rhs) {
 	return !(lhs == rhs);
 }
 template <typename... A1, typename... A2>
-constexpr bool operator>=(StableVector<A1...> const& lhs, StableVector<A2...> const& rhs) {
+constexpr bool operator>=(BasicStableVector<A1...> const& lhs, BasicStableVector<A2...> const& rhs) {
 	return !(lhs < rhs);
 }
 template <typename... A1, typename... A2>
-constexpr bool operator >(StableVector<A1...> const& lhs, StableVector<A2...> const& rhs) {
+constexpr bool operator >(BasicStableVector<A1...> const& lhs, BasicStableVector<A2...> const& rhs) {
 	return rhs < lhs;
 }
 template <typename... A1, typename... A2>
-constexpr bool operator<=(StableVector<A1...> const& lhs, StableVector<A2...> const& rhs) {
+constexpr bool operator<=(BasicStableVector<A1...> const& lhs, BasicStableVector<A2...> const& rhs) {
 	return !(lhs > rhs);
 }
+
+template <typename T, std::size_t MaxN>
+using StableVector = BasicStableVector<T, ChunkPool<T, MaxN>>;
 
 }
