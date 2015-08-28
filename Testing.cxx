@@ -121,7 +121,7 @@ constexpr auto h() {
 static_assert( h() == "34*****xxxrld!" );
 
 constexpr auto i() {
-	StableVector<int, ChunkPool<int, 64>> s{1, 2, 3, 5};
+	StableVector<int, 64> s{1, 2, 3, 5};
 	s.insert(s.end()-1, 4);
 	// 1 2 3 4 5
 	auto it = s.end()-1;
@@ -132,20 +132,34 @@ constexpr auto i() {
 	int i=0;
 	for (auto& j : makeIteratorRange(rbegin(s), rend(s)))
 		j += ++i;
-	// 4, 7, 7, 6
+	// 5, 7, 7, 6
 	return s;
 }
-// TODO: Report this bug
-// static_assert( i() == StableVector<int, ChunkPool<int, 50>>{4, 7, 7, 6} );
+static_assert( i() == StableVector<int, 50>{5, 7, 7, 6} );
 
 constexpr auto j() {
-	FlatMap<int, char, 64, std::greater<>> map(ordered_unique_range, {{3, 'a'}, {2, 'b'}});
-	assert( map.insert_or_assign(7, 'd').second );
+	StableFlatMap<int, char, 64, std::greater<>> map(ordered_unique_range, {{3, 'a'}, {2, 'b'}});
+	assert( map.insert_or_assign(5, 'd').second );
 	map[2] = 'e';
-	map.insert(ordered_unique_range, {{561, 'd'}, {3, 'w'}, {1,'c'}});
+	map.insert(ordered_unique_range, {{4, 'd'}, {3, 'w'}, {1,'c'}});
 	return map;
 }
-static_assert( j() == FlatMap<int, char, 64, std::greater<>>{{561, 'd'}, {7, 'd'}, {3, 'a'}, {2, 'e'}, {1, 'c'}} );
+static_assert( j() == StableFlatMap<int, char, 10, std::greater<>>{{5, 'd'}, {4, 'd'}, {3, 'a'}, {2, 'e'}, {1, 'c'}} );
+
+constexpr auto k() {
+	StableFlatMultiMap<int, char, 64, std::greater<>> map(ordered_unique_range, {{3, 'c'}, {2, 'b'}});
+
+	auto i = map.begin()+1, j = map.end();
+
+	map.insert({{2, 'c'}, {3, 'd'}});
+	auto range = map.equal_range(2);
+	assert(range.first == i && range.second == map.end());
+	assert( i ==  )
+
+	return map;
+}
+static_assert( k() == StableFlatMultiMap<int, char, 10, std::greater<>>{{3, 'c'}, {3, 'd'}, {2, 'b'}, {2, 'c'}} );
+
 
 static_assert( strToInt<int>(" 6849.") == 6849 );
 static_assert( strToInt<signed char>(" -128aefws") == -128 );
