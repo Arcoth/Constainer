@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "UniqueFlatTree.hxx"
+#include "FlatUniqueTree.hxx"
 #include "StableVector.hxx"
 
 namespace Constainer {
@@ -110,12 +110,14 @@ namespace std {
 
 namespace Constainer {
 
-template <typename Key, typename Mapped, typename Compare, typename Container>
+namespace detail {
+template <typename Key, typename Mapped, typename Compare, typename Container,
+          template <typename...> class Base>
 class BasicFlatMap
-	: public      detail::UniqueFlatTree<Key, ConstKeyPair<Key, Mapped>,
-	                                     typename ConstKeyPair<Key, Mapped>::KeyOfPair, Compare, Container> {
-	using _base = detail::UniqueFlatTree<Key, ConstKeyPair<Key, Mapped>,
-	                                     typename ConstKeyPair<Key, Mapped>::KeyOfPair, Compare, Container>;
+	: public      Base<Key, ConstKeyPair<Key, Mapped>,
+	                   typename ConstKeyPair<Key, Mapped>::KeyOfPair, Compare, Container> {
+	using _base = Base<Key, ConstKeyPair<Key, Mapped>,
+	                   typename ConstKeyPair<Key, Mapped>::KeyOfPair, Compare, Container>;
 
 public:
 	using _base::_base;
@@ -130,20 +132,20 @@ public:
 	using typename _base::iterator;
 	using typename _base::const_iterator;
 
-	constexpr mapped_type& operator[](key_type const& key) {
+private:
+	template <typename K>
+	constexpr mapped_type& _subscript_op(K&& key) {
 		auto pos = this->lower_bound(key);
 		if (pos != this->end() and not this->_key_comp()(key, pos->key()))
 			return pos->value();
-		return *this->emplace_hint(pos, key, mapped_type())->value();
-	}
-	constexpr mapped_type& operator[](key_type && key) {
-		auto pos = this->lower_bound(key);
-		if (pos != this->end() and not this->_key_comp()(key, pos->key()))
-			return pos->value();
-		return this->emplace_hint(pos, std::move(key), mapped_type())->value();
+		return this->emplace_hint(pos, std::forward<K>(key), mapped_type())->value();
 	}
 
-	constexpr reference at(key_type const& key) {
+public:
+	constexpr mapped_type& operator[](key_type const& key) {return _subscript_op(          key );}
+	constexpr mapped_type& operator[](key_type     && key) {return _subscript_op(std::move(key));}
+
+	constexpr       reference at(key_type const& key) {
 		auto pos = this->find(key);
 		AssertExcept<std::out_of_range>(pos != this->end(), "");
 		return *pos;
@@ -212,11 +214,24 @@ public:
 		mapped_type v(std::forward<Args>(args)...);
 		return insert_or_assign(hint, std::move(key), std::move(v));
 	}
+
+
 };
+}
+
+template <typename K, typename M, typename C, typename Cont>
+using BasicFlatMap = detail::BasicFlatMap<K, M, C, Cont, detail::FlatUniqueTree>;
+template <typename K, typename M, typename C, typename Cont>
+using BasicFlatMultiMap = detail::BasicFlatMap<K, M, C, Cont, detail::FlatMultiTree>;
 
 template <typename K, typename V, std::size_t MaxN, typename Compare = std::less<K>>
 using FlatMap = BasicFlatMap<K, V, Compare, Constainer::Vector<ConstKeyPair<K, V>, MaxN>>;
 template <typename K, typename V, std::size_t MaxN, typename Compare = std::less<K>>
-using StableFlatMap = BasicFlatMap<K, V, Compare, Constainer::StableVector<ConstKeyPair<K, V>, ChunkPool<int, MaxN>>>;
+using StableFlatMap = BasicFlatMap<K, V, Compare, Constainer::StableVector<ConstKeyPair<K, V>, MaxN>>;
+
+template <typename K, typename V, std::size_t MaxN, typename Compare = std::less<K>>
+using FlatMultiMap = BasicFlatMultiMap<K, V, Compare, Constainer::Vector<ConstKeyPair<K, V>, MaxN>>;
+template <typename K, typename V, std::size_t MaxN, typename Compare = std::less<K>>
+using StableFlatMultiMap = BasicFlatMultiMap<K, V, Compare, Constainer::StableVector<ConstKeyPair<K, V>, MaxN>>;
 
 }
