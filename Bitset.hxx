@@ -10,7 +10,7 @@
 
 namespace Constainer {
 
-template <std::size_t N>
+template <std::size_t N=defaultContainerSize>
 class Bitset {
 	// TODO: Support zero-sized bitsets?
 

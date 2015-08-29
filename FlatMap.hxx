@@ -5,6 +5,7 @@
 #pragma once
 
 #include "FlatUniqueTree.hxx"
+#include "FlatMultiTree.hxx"
 #include "StableVector.hxx"
 
 namespace Constainer {
@@ -224,14 +225,14 @@ using BasicFlatMap = detail::BasicFlatMap<K, M, C, Cont, detail::FlatUniqueTree>
 template <typename K, typename M, typename C, typename Cont>
 using BasicFlatMultiMap = detail::BasicFlatMap<K, M, C, Cont, detail::FlatMultiTree>;
 
-template <typename K, typename V, std::size_t MaxN, typename Compare = std::less<K>>
+template <typename K, typename V, std::size_t MaxN=defaultContainerSize, typename Compare = std::less<K>>
 using FlatMap = BasicFlatMap<K, V, Compare, Constainer::Vector<ConstKeyPair<K, V>, MaxN>>;
-template <typename K, typename V, std::size_t MaxN, typename Compare = std::less<K>>
+template <typename K, typename V, std::size_t MaxN=defaultContainerSize, typename Compare = std::less<K>>
 using StableFlatMap = BasicFlatMap<K, V, Compare, Constainer::StableVector<ConstKeyPair<K, V>, MaxN>>;
 
-template <typename K, typename V, std::size_t MaxN, typename Compare = std::less<K>>
+template <typename K, typename V, std::size_t MaxN=defaultContainerSize, typename Compare = std::less<K>>
 using FlatMultiMap = BasicFlatMultiMap<K, V, Compare, Constainer::Vector<ConstKeyPair<K, V>, MaxN>>;
-template <typename K, typename V, std::size_t MaxN, typename Compare = std::less<K>>
+template <typename K, typename V, std::size_t MaxN=defaultContainerSize, typename Compare = std::less<K>>
 using StableFlatMultiMap = BasicFlatMultiMap<K, V, Compare, Constainer::StableVector<ConstKeyPair<K, V>, MaxN>>;
 
 }
