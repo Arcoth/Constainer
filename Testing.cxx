@@ -154,7 +154,6 @@ constexpr auto k() {
 	map.insert({{2, 'c'}, {3, 'd'}});
 	auto range = map.equal_range(2);
 	assert(range.first == i && range.second == j);
-	assert( i ==  )
 
 	return map;
 }
