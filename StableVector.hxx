@@ -314,12 +314,8 @@ public:
 
 };
 
-template <typename T>
-using StableVector128 = BasicStableVector<T, ChunkPool<T, 128>>;
-template <typename T>
-using StableVector256 = BasicStableVector<T, ChunkPool<T, 256>>;
-template <typename T>
-using StableVector512 = BasicStableVector<T, ChunkPool<T, 512>>;
+template <typename T, std::size_t MaxN=defaultContainerSize>
+using StableVector = BasicStableVector<T, ChunkPool<T, MaxN>>;
 
 template <typename... A1, typename... A2>
 constexpr bool operator==(BasicStableVector<A1...> const& lhs, BasicStableVector<A2...> const& rhs) {
@@ -345,8 +341,5 @@ template <typename... A1, typename... A2>
 constexpr bool operator<=(BasicStableVector<A1...> const& lhs, BasicStableVector<A2...> const& rhs) {
 	return !(lhs > rhs);
 }
-
-template <typename T, std::size_t MaxN>
-using StableVector = BasicStableVector<T, ChunkPool<T, MaxN>>;
 
 }
