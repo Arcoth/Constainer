@@ -156,7 +156,8 @@ public:
 
 	template <typename CharT = char, std::size_t MaxN = N,
 	          typename CharTraits=Constainer::CharTraits<CharT>>
-	BasicString<CharT, MaxN, CharTraits> to_string(CharT zero='0', CharT one='1') const {
+	constexpr BasicString<CharT, MaxN, CharTraits> to_string(CharT zero='0', CharT one='1') const
+	{
 		BasicString<CharT, MaxN, CharTraits> str; str.resize(size(), zero);
 		// TODO: More efficient?
 		for (size_type i = 0; i != size(); ++i)
@@ -167,29 +168,30 @@ public:
 
 private:
 
-    template <typename Op>
-    friend Bitset _apply( const Bitset& lhs, const Bitset& rhs, Op op ) {
-        auto rval = lhs;
-        auto ptr = rval._storage.data();
-        for (auto i : rhs._storage) {
-            *ptr = op(*ptr, i);
-            ++ptr;
-        }
-        return rval;
-    }
+	template <typename Op>
+	friend constexpr Bitset _apply( Bitset const& lhs, Bitset const& rhs, Op op ) {
+		auto rval = lhs;
+		auto ptr = rval._storage.data();
+		for (auto i : rhs._storage) {
+			*ptr = op(*ptr, i);
+			++ptr;
+		}
+		return rval;
+	}
+
+public:
+
+	friend constexpr Bitset operator|( Bitset const& lhs, Bitset const& rhs ) {
+		return _apply(lhs, rhs, std::bit_or<>());
+	}
+	friend constexpr Bitset operator&( Bitset const& lhs, Bitset const & rhs ) {
+		return _apply(lhs, rhs, std::bit_and<>());
+	}
+	friend constexpr Bitset operator^( Bitset const& lhs, Bitset const& rhs ) {
+		return _apply(lhs, rhs, std::bit_xor<>());
+	}
 };
 
-template <std::size_t N>
-Bitset<N> operator|( const Bitset<N>& lhs, const Bitset<N>& rhs ) {
-    return _apply(lhs, rhs, std::bit_or<>());
-}
-template <std::size_t N>
-Bitset<N> operator&( const Bitset<N>& lhs, const Bitset<N>& rhs ) {
-    return _apply(lhs, rhs, std::bit_and<>());
-}
-template <std::size_t N>
-Bitset<N> operator^( const Bitset<N>& lhs, const Bitset<N>& rhs ) {
-    return _apply(lhs, rhs, std::bit_xor<>());
-}
+
 
 }
