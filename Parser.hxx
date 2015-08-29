@@ -310,19 +310,4 @@ constexpr auto strToFloat( char const* str, std::size_t* pos = 0 )
 	return strToFloat<Float>(str, CharTraits<char>::length(str), pos);
 }
 
-/**<  Make-shift implementation */
-template <typename Integral, std::size_t N = 64>
-constexpr require<std::is_integral<Integral>, BasicString<char, N>> toString(Integral i) {
-	String str;
-	bool negative = i < 0;
-	while (i != 0) {
-		str += i % 10 + '0';
-		i /= 10;
-	}
-	if (negative)
-		str += '-';
-	Constainer::reverse(str.begin(), str.end());
-	return str;
-}
-
 }
