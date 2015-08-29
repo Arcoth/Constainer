@@ -54,7 +54,7 @@ constexpr bool operator<=(BasicVector<T1, Size1, Traits1> const& lhs, BasicVecto
 	return !(lhs > rhs);
 }
 
-template <typename T, std::size_t N>
+template <typename T, std::size_t N=defaultContainerSize>
 using Vector = BasicVector<T, N, DefaultCopyTraits<T>>;
 
 }
