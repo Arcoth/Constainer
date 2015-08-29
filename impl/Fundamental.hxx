@@ -39,6 +39,14 @@
 
 namespace Constainer {
 
+static constexpr std::size_t defaultContainerSize =
+#ifdef CONSTAINER_DEFAULT_CONTAINER_SIZE
+	CONSTAINER_DEFAULT_CONTAINER_SIZE
+#else
+	256
+#endif // CONSTAINER_DEFAULT_CONTAINER_SIZE
+;
+
 template <typename T> struct identity {using type=T;};
 
 /**< More literal versions of enable_if */
