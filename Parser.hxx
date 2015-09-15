@@ -152,9 +152,10 @@ constexpr auto strToInt( char const* str, std::size_t* pos = 0, int base = 10 )
 }
 
 template <typename Int, std::size_t N>
-constexpr auto strToInt( BasicString<char, N> const& str, std::size_t* pos = 0, int base = 10 )
+constexpr auto strToInt( BasicString<char, N> const& str, std::size_t str_pos = 0,
+                         std::size_t* pos = 0, int base = 10 )
 	-> require<std::is_integral<Int>, Int> {
-	return strToInt<Int>(str.data(), str.size(), pos, base);
+	return strToInt<Int>(str.data()+str_pos, str.size(), pos, base);
 }
 
 template <typename Float, typename InputIt>
