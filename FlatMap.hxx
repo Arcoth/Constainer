@@ -93,11 +93,13 @@ public:
 		}
 		template <typename K, typename V>
 		friend constexpr bool operator <(ConstKeyPair<K, V> const& lhs, ConstKeyPair<K, V> const& rhs) {
-			return std::tie(lhs.key(), lhs.value()) < std::tie(rhs.key(), rhs.value());
+			return lhs.key()<rhs.key() || lhs.value()<rhs.value();
 		}
 	};
 }
 
+CONSTAINER_DIAGNOSTIC_PUSH
+CONSTAINER_DIAGNOSTIC_IGNORE("-Wmismatched-tags")
 namespace std {
 	template <typename K, typename V>
 	struct tuple_size<Constainer::ConstKeyPair<K, V>> : std::integral_constant<std::size_t, 2> {};
@@ -108,6 +110,7 @@ namespace std {
 	template <typename K, typename V>
 	struct tuple_element<1, Constainer::ConstKeyPair<K, V>> {using type = V;};
 }
+CONSTAINER_DIAGNOSTIC_POP
 
 namespace Constainer {
 
