@@ -37,6 +37,12 @@
 	#endif
 #endif // defined CONSTAINER_PURE_CONST
 
+#define CONSTAINER_DIAGNOSTIC_PUSH _Pragma("GCC diagnostic push")
+#define CONSTAINER_DIAGNOSTIC_POP  _Pragma("GCC diagnostic pop")
+#define CONSTAINER_STRINGIZE_(x) #x
+#define CONSTAINER_STRINGIZE(x) CONSTAINER_STRINGIZE_(x)
+#define CONSTAINER_DIAGNOSTIC_IGNORE(w)  _Pragma(CONSTAINER_STRINGIZE(GCC diagnostic ignored w))
+
 namespace Constainer {
 
 static constexpr std::size_t defaultContainerSize =
