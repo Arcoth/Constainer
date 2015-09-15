@@ -12,7 +12,7 @@
 namespace Constainer {
 	namespace detail {
 		template <int i> struct rank : rank<i+1> {};
-		template <> struct rank<10> {};
+		template <> struct rank<32> {};
 
 		template <typename T>
 		constexpr auto _begin(rank<0>, T&& t)
