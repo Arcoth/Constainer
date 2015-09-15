@@ -186,7 +186,7 @@ public:
 	constexpr BasicString& operator=(BasicString const&) = default;
 	constexpr BasicString& operator=(BasicString&&) = default;
 	constexpr BasicString& operator=(const_pointer p) {return assign(p);}
-	constexpr BasicString& operator=(value_type c) {return assign(1, c);}
+	constexpr BasicString& operator=(value_type c) {_base::assign(1, c); return *this;} // Prevent postponed lookup into base class
 	constexpr BasicString& operator=(std::initializer_list<value_type> ilist) {
 		return assign(ilist);
 	}
