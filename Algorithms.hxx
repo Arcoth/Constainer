@@ -50,6 +50,14 @@ namespace detail {
 template <typename T>
 constexpr void swap(T& a, T& b) {detail::swap(a,b,0);}
 
+constexpr std::size_t strlen(char const* s) {
+	std::size_t l=0;
+	while (*s) {
+		++s; ++l;
+	}
+	return l;
+}
+
 template <typename InputIterator, typename T, typename Comp>
 constexpr auto find(InputIterator first, InputIterator last, T const& val, Comp comp) {
 	while (first != last && !comp(*first, val))
