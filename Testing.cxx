@@ -11,6 +11,7 @@
 #include "StableVector.hxx"
 #include "FlatSet.hxx"
 #include "FlatMap.hxx"
+#include "StaticPrintf.hxx"
 
 // Check ADL range access
 static_assert( std::is_same<decltype(begin(Constainer::String())), Constainer::String::iterator>{} );
@@ -179,3 +180,23 @@ static_assert( strToFloat<double>("-0x1.Bc70a3D70A3d7p+6") == -111.11 );
 static_assert( strToFloat<double     >("-1.18973e+4932") == -std::numeric_limits<double>::infinity() );
 static_assert( strToFloat<long double>("-1.18973e+4932") != -std::numeric_limits<long double>::infinity() );
 static_assert( strToFloat<double>("-0x.8p-1") == -0.25 );
+
+static_assert( abs(std::numeric_limits<double>::infinity())  == std::numeric_limits<double>::infinity() );
+static_assert( abs(-std::numeric_limits<double>::infinity()) == std::numeric_limits<double>::infinity() );
+
+// Taken from http://osxr.org/glibc/source/stdio-common/tst-printf.c#0373
+namespace TC001
+{
+	constexpr double g = 5.0000001;
+	constexpr double d = 321.7654321;
+	const int i = 12345;
+	const int h = 1234;
+	const unsigned long l = 1234567890;
+	constexpr char s[] = "test-string";
+
+	static_assert( "%1$*5$d %2$*6$i %3$*7$o %4$*8$f %9$*12$e %10$*13$g %11$*14$s"_ConstainerStaticPrintf (i, h, l, d, 8, 5, 14, 14, d, g, s, 14, 3, 14)
+	            == "   12345  1234    11145401322     321.765432   3.217654e+02   5    test-string" );
+}
+
+static_assert( 0.123456789456 == strToFloat<double>("%a\n"_ConstainerStaticPrintf(0.123456789456).c_str()) );
+
