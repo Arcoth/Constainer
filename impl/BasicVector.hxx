@@ -91,11 +91,11 @@ protected:
 
 	constexpr auto _data() {return this->_storage;}
 
-	constexpr void _verifySizeInc(size_type s) const {
-		AssertExcept<std::length_error>( size() <= MaxN-s, "Invalid attempt to increase container size" );
+	constexpr void _verifySizeInc(size_type n) const {
+		AssertExcept<std::length_error>( size() <= MaxN-n, "Invalid attempt to increase container size" );
 	}
-	constexpr void _verifiedSizeInc(size_type c) {
-		_verifySizeInc(c); _size += c;
+	constexpr void _verifiedSizeInc(size_type n) {
+		_verifySizeInc(n); _size += n;
 	}
 
 	constexpr void _createInsertionSpace(const_iterator pos, size_type len) {
@@ -121,12 +121,12 @@ public:
 
 	constexpr BasicVector() :_base{},  _size(0) {}
 
-	constexpr BasicVector( size_type s ) : _base{}, _size(s) {
+	constexpr explicit BasicVector( size_type n ) : _base{}, _size(n) {
 		_verifySizeInc(0); // The INCREASE is 0, not the size to test!
 	}
 
-	constexpr BasicVector( size_type s, value_type const& v ) : BasicVector(0) {
-		insert(begin(), s, v);
+	constexpr BasicVector( size_type n, value_type const& v ) : BasicVector(0) {
+		insert(begin(), n, v);
 	}
 
 	template <typename InputIt,
@@ -200,11 +200,11 @@ public:
 	constexpr       reference back()       {return end()[-1];}
 	constexpr const_reference back() const {return end()[-1];}
 
-	constexpr reference       operator[](size_type s) {
-		assert(s < size() && "Invalid index!"); return _base::operator[](s);
+	constexpr reference       operator[](size_type i) {
+		assert(i < size() && "Invalid index!"); return _base::operator[](i);
 	}
-	constexpr const_reference operator[](size_type s) const {
-		assert(s < size() && "Invalid index!"); return _base::operator[](s);
+	constexpr const_reference operator[](size_type i) const {
+		assert(i < size() && "Invalid index!"); return _base::operator[](i);
 	}
 
 private:
@@ -305,9 +305,9 @@ public:
 	constexpr iterator insert( const_iterator pos, value_type const& v ) {return _insert(pos, v);}
 	constexpr iterator insert( const_iterator pos, value_type     && v ) {return _insert(pos, std::move(v));}
 
-	constexpr iterator insert( const_iterator pos, size_type c, const_reference v ) {
-		_createInsertionSpace(pos, c);
-		traits_type::assign(_remcv(pos), c, v);
+	constexpr iterator insert( const_iterator pos, size_type n, const_reference v ) {
+		_createInsertionSpace(pos, n);
+		traits_type::assign(_remcv(pos), n, v);
 		return _remcv(pos);
 	}
 
@@ -319,9 +319,9 @@ public:
 		clear(); insert(ilist);
 	}
 
-	constexpr void assign( size_type count, const_reference value ) {
+	constexpr void assign( size_type n, const_reference value ) {
 		clear();
-		insert(begin(), count, value);
+		insert(begin(), n, value);
 	}
 
 	template <class InputIt>
