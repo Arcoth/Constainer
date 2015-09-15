@@ -4,9 +4,12 @@
 
 #pragma once
 
-#include "impl/Fundamental.hxx"
+#include "Stack.hxx"
 
+#include <limits>
 #include <type_traits>
+
+#include <cassert>
 
 namespace Constainer {
 
@@ -30,8 +33,7 @@ CONSTAINER_PURE_CONST constexpr T signum(T x) {
 template <typename T>
 CONSTAINER_PURE_CONST constexpr require<std::is_arithmetic<T>, T>
 abs(T i) {
-	// Works for infty, and -0.: Returns --0. = +0.
-	return i>0? i : -i;
+	return i>T(0)? i : i<T(0)? -i : T(0);
 }
 
 /**< Does FP-multiplication but covers infinity to keep the expressions constant.
@@ -128,6 +130,130 @@ CONSTAINER_PURE_CONST constexpr unsigned count_trailing( std::uint64_t v ) {
 		};
 		return deBruijn[(v & -v) * 0x022FDD63CC95386D >> 27];
 	#endif
+}
+
+/**< Obtains the fractional part of r by subtracting powers of two. */
+template <typename Real>
+constexpr Real fractional (Real r)
+{
+	Real x = signum(r);
+	while (x < r/2)
+		x *= 2;
+	while (x >= 1)
+	{
+		if (x <= r)
+			r -= x;
+		x /= 2;
+	}
+	return r;
+}
+
+/**< Obtains r%u. */
+template <typename Real>
+constexpr Real remainder (Real r, std::uintmax_t u)
+{
+	assert (u != 0);
+	if (UINTMAX_MAX >= r/u)
+		return r-std::uintmax_t (r/u) *u;
+
+	Stack<Real> upows ({1});
+	for (Real x=1, xu = x*u; r >= xu;)
+	{
+		assert (xu);
+		upows.push (x = xu);
+		xu *= u;
+	}
+	do
+	{
+		auto value = upows.pop_return();
+		if (r >= value)
+			r -= std::uintmax_t (r/value) *value;
+	}
+	while (UINTMAX_MAX* (Real) u <= r);
+	return r-std::uintmax_t (r/u) *u;
+}
+
+template <typename Real>
+constexpr std::uintmax_t rounded_remainder (Real r, std::uintmax_t u) {
+	return remainder (r, u) + 0.5;
+}
+
+// Doesn't correctly determine negative zeroes yet.
+template <typename T>
+constexpr bool is_negative ( T t ) {
+	return t < 0 /*|| 1/t == -std::numeric_limits<T>::infinity()*/;
+}
+
+/**< Inefficient implementation; However, constexpr forbids e.g. aliasing through char,
+     so using properties of IEEE 754 is impossible. */
+template <typename Real>
+constexpr std::pair<Real, int> normalize (int base, Real r)
+{
+	int exp_sum = 0;
+	int exp = 1;
+	Constainer::Stack<Real> pows;
+	bool negative = is_negative (r);
+	if (negative)
+		r = -r;
+	if (r!=0 && r<1)
+	{
+		for (Real x=Real(1)/base; ; x*=x)
+		{
+			pows.push (x);
+			if (r >= x*x)
+				break;
+			exp *= 2;
+		}
+		do
+		{
+			auto pow = pows.pop_return();
+			while (r/pow < base)
+			{
+				r /= pow;
+				exp_sum -= exp;
+			}
+			exp /= 2;
+		}
+		while (r < 1);
+
+	}
+	else if (r >= base)
+	{
+		for (Real x=base; ; x*=x)
+		{
+			pows.push (x);
+			if (r/x < x)
+				break;
+			exp *= 2;
+		}
+		do
+		{
+			auto pow = pows.pop_return();
+			while (r >= pow)
+			{
+				r /= pow;
+				exp_sum += exp;
+			}
+			exp /= 2;
+		}
+		while (r >= base);
+	}
+	return {negative? -r : r, exp_sum};
+}
+
+template <typename T>
+constexpr T ln10 = 2.3025850929940456840179914546843L;
+template <typename Real>
+constexpr Real pow10(Real x) {
+	Real sum=1, fact=1;
+	auto y = x * ln10<Real>;
+	x = y;
+	for (int i=2; i < std::numeric_limits<Real>::max_digits10+5; ++i) {
+		sum += fact*x;
+		x *= y;
+		fact /= i;
+	}
+	return sum;
 }
 
 }
