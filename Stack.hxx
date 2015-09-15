@@ -27,7 +27,7 @@ struct Stack
 	constexpr Stack& operator=(Stack const& s) = default;
 	constexpr Stack& operator=(Stack && s) = default;
 
-	constexpr reference top() {return c.back();}
+	constexpr       reference top()       {return c.back();}
 	constexpr const_reference top() const {return c.back();}
 
 	constexpr bool empty() const {return c.empty();}
@@ -41,6 +41,8 @@ struct Stack
 	constexpr void push(value_type&&    r) {c.push_back(std::move(r));}
 
 	constexpr void pop() {c.pop_back();}
+
+	constexpr value_type pop_return() {auto x = top(); pop(); return x;}
 
 	constexpr void swap(Stack& other) {swap(c, other.c);}
 };
