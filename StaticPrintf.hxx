@@ -90,6 +90,34 @@ struct Parser {
 		bool upper = false;
 	};
 
+	template <typename Stream>
+	static constexpr void applyInfoToStream( Stream& stream, Info const& info ) {
+		stream.precision(info.precision);
+		stream.width(info.width);
+		stream.fill(info.pad);
+
+		// This is not necessary, as we pad the field ourselves
+		/*switch (info.alignment) {
+		case Info::left_justified:
+			stream.setf(Stream::left, Stream::adjustfield);
+		break;
+		case Info::right_justified: case Info::central:
+			stream.setf(Stream::right, Stream::adjustfield);
+		break;
+		default: // Info::internal
+			stream.setf(Stream::internal, Stream::adjustfield);
+		};*/
+
+		if (info.upper)
+			stream.setf(Stream::uppercase);
+		if (info.prepend == '+')
+			stream.setf(Stream::showpos);
+
+		if (info.base == 10) stream.setf(Stream::dec, Stream::basefield);
+		else if (info.base == 16) stream.setf(Stream::hex, Stream::basefield);
+		else /*info.base == 8*/ stream.setf(Stream::oct, Stream::basefield);
+	}
+
 	template <typename StringType>
 	static constexpr void pad_central ( StringType& str, typename StringType::size_type needed , CharT c ) {
 		str.append (needed/2, c);
@@ -102,13 +130,13 @@ struct Parser {
 		if (str.size() < (std::size_t)info.width) {
 			auto needed = info.width - str.size();
 			switch (info.alignment) {
-				case Info::internal: case Info::left_justified:
+				case Info::left_justified:
 					str.append (needed, info.pad);
 				break;
 				case Info::central:
 					pad_central(str, needed, info.pad);
 				break;
-				default:
+				default: // internal and right-justified
 					str.insert (0, needed, info.pad);
 			}
 		}
@@ -542,13 +570,13 @@ struct Parser {
 	{
 	private:
 		template <typename StringType>
-		struct buffer_t : std::basic_streambuf<CharT, Traits>
+		struct buffer_t : std::basic_streambuf<CharT>
 		{
 		private:
 			StringType _str;
 
 		public:
-			using typename std::basic_streambuf<CharT, Traits>::int_type;
+			using typename std::basic_streambuf<CharT>::int_type;
 
 			auto const& str() const {return _str;}
 
@@ -561,7 +589,7 @@ struct Parser {
 			}
 
 			std::streamsize xsputn (CharT const* s, std::streamsize count) override {
-				_str.append (count, s);
+				_str.append (s, count);
 				return count;
 			}
 		};
@@ -594,9 +622,11 @@ struct Parser {
 		void call ( detail::rank<10>, StringType& str, Arg const& arg )
 		{
 			buffer_t<StringType> buf;
-			std::basic_ostream<CharT, Traits> stream (&buf);
+			// Use standard library char_traits
+			std::basic_ostream<CharT> stream (&buf);
+			applyInfoToStream(stream, *this);
 			stream << arg;
-			str += this->pad_and_reverse (std::false_type {}, buf.str() );
+			str += this->pad_unformatted( buf.str() );
 		}
 
 		template <typename StringType, typename Arg>
