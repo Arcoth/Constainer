@@ -7,6 +7,9 @@
 #include "String.hxx"
 #include "Stack.hxx"
 #include "Math.hxx"
+#include "RangeAccess.hxx"
+
+#include <type_traits>
 
 namespace Constainer { namespace detail {
 
