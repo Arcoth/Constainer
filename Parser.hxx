@@ -1,4 +1,4 @@
-/* Copyright 2015 Robert Haberlach
+/* Copyright 2015, 2016 Robert Haberlach
 	Distributed under the Boost Software License, Version 1.0.
 	(See accompanying file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt) */
 
