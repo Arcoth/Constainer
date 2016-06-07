@@ -21,8 +21,8 @@ public:
 	using pool_type = typename Pool::template rebind<Node>;
 
 	using value_type      = T;
-	using size_type       = std::size_t;
-	using difference_type = std::ptrdiff_t;
+	using size_type       = STD::size_t;
+	using difference_type = STD::ptrdiff_t;
 	using reference       = value_type&;
 	using const_reference = value_type const&;
 	using pointer         = value_type*;
@@ -55,7 +55,7 @@ private:
 		constexpr Node() = default;
 
 		constexpr Node& operator=(Node const&) = default;
-		constexpr Node& operator=(Node && n) {value = std::move(n.value); up = n.up; return *this;}
+		constexpr Node& operator=(Node && n) {value = STD::move(n.value); up = n.up; return *this;}
 		constexpr Node(Node const&) = default;
 		constexpr Node(Node &&) = default;
 
@@ -65,26 +65,26 @@ private:
 		}
 		template <typename... Args>
 		constexpr void setParent(_pointer_iter it, Args&&... args) {
-			value = value_type(std::forward<Args>(args)...); setParent(it);
+			value = value_type(STD::forward<Args>(args)...); setParent(it);
 		}
 		// Avoid superfluous temporary if possible:
 		template <typename Arg>
 		constexpr auto setParent(_pointer_iter it, Arg&& arg)
-			-> require<std::is_same<std::decay_t<Arg>, value_type>> {
-			value = std::forward<Arg>(arg); setParent(it);
+			-> require<STD::is_same<STD::decay_t<Arg>, value_type>> {
+			value = STD::forward<Arg>(arg); setParent(it);
 		}
 	};
 
 	template <bool _const>
 	class _iterator_base : public RandomAccessIteratable<_iterator_base<_const>,
-	                                                     std::conditional_t<_const, const_pointer  , pointer  >,
-	                                                     std::conditional_t<_const, const_reference, reference>, std::ptrdiff_t> {
+	                                                     STD::conditional_t<_const, const_pointer  , pointer  >,
+	                                                     STD::conditional_t<_const, const_reference, reference>, STD::ptrdiff_t> {
 	public:
-		using difference_type   = std::ptrdiff_t;
-		using pointer           = std::conditional_t<_const, BasicStableVector::const_pointer, BasicStableVector::pointer>;
-		using reference         = std::conditional_t<_const, BasicStableVector::const_reference, BasicStableVector::reference>;
+		using difference_type   = STD::ptrdiff_t;
+		using pointer           = STD::conditional_t<_const, BasicStableVector::const_pointer, BasicStableVector::pointer>;
+		using reference         = STD::conditional_t<_const, BasicStableVector::const_reference, BasicStableVector::reference>;
 		using value_type        = BasicStableVector::value_type;
-		using iterator_category = std::random_access_iterator_tag;
+		using iterator_category = STD::random_access_iterator_tag;
 
 	private:
 		Node* _node;
@@ -95,12 +95,12 @@ private:
 
 		constexpr explicit _iterator_base(Node* p) : _node(p) {}
 
-		template <bool _const2, std::enable_if_t<(_const2 > _const), int> = 0>
+		template <bool _const2, STD::enable_if_t<(_const2 > _const), int> = 0>
 		constexpr _iterator_base(_iterator_base<_const2> i) : _node(i._node) {}
 
 	public:
 
-		template <bool _const2, std::enable_if_t<(_const2 <= _const), long> = 0>
+		template <bool _const2, STD::enable_if_t<(_const2 <= _const), long> = 0>
 		constexpr _iterator_base(_iterator_base<_const2> i) : _node(i._node) {}
 
 		constexpr _iterator_base(_iterator_base const& i) : _node(i._node) {}
@@ -183,23 +183,23 @@ public:
 		insert(begin(), first, last);
 	}
 
-	constexpr BasicStableVector(std::initializer_list<value_type> ilist) :
+	constexpr BasicStableVector(STD::initializer_list<value_type> ilist) :
 		BasicStableVector(ilist.begin(), ilist.end()) {}
 
 	constexpr BasicStableVector(BasicStableVector const& s) {_append(s);}
-	constexpr BasicStableVector(BasicStableVector && s) {_append(std::move(s));}
+	constexpr BasicStableVector(BasicStableVector && s) {_append(STD::move(s));}
 
 	constexpr BasicStableVector& operator=(BasicStableVector const& s) {
 		clear(); _append(s);
 	}
 	constexpr BasicStableVector& operator=(BasicStableVector && s) {
-		clear(); _append(std::move(s));
+		clear(); _append(STD::move(s));
 	}
 
 private:
 	template <typename... Args>
 	constexpr void _initialize( _pointer_iter it, Args&&... args) {
-		_pool.grab()->setParent(it, std::forward<Args>(args)...);
+		_pool.grab()->setParent(it, STD::forward<Args>(args)...);
 	}
 
 	// Shifts all elements in [it, _pointers.end()) by n elements to the right, so
@@ -222,12 +222,12 @@ private:
 	}
 
 	template <typename ForwardIt>
-	constexpr void _insert(const_iterator it, ForwardIt first, ForwardIt last, std::forward_iterator_tag) {
+	constexpr void _insert(const_iterator it, ForwardIt first, ForwardIt last, STD::forward_iterator_tag) {
 		_insert_n(it, Constainer::distance(first, last), first);
 	}
 
 	template <typename ForwardIt>
-	constexpr void _insert(const_iterator it, ForwardIt first, ForwardIt last, std::input_iterator_tag) {
+	constexpr void _insert(const_iterator it, ForwardIt first, ForwardIt last, STD::input_iterator_tag) {
 		auto pointer_iter = it._node->up;
 		while (first != last) {
 			_shift(it, 1);
@@ -250,12 +250,12 @@ public:
 	constexpr iterator emplace(const_iterator it, Args&&... args) {
 		auto pointer_iter = _piter_of(it);
 		_shift(pointer_iter, 1);
-		_initialize(pointer_iter, std::forward<Args>(args)...);
+		_initialize(pointer_iter, STD::forward<Args>(args)...);
 		return it;
 	}
 
 	constexpr iterator insert(const_iterator it, const_reference v) {return emplace(it, v);}
-	constexpr iterator insert(const_iterator it, value_type   && v) {return emplace(it, std::move(v));}
+	constexpr iterator insert(const_iterator it, value_type   && v) {return emplace(it, STD::move(v));}
 
 	constexpr iterator insert(const_iterator it, size_type n, const_reference v) {
 		return _insert_repeat(it, n, v);
@@ -263,7 +263,7 @@ public:
 	template <typename InputIterator>
 	constexpr require<isInputIterator<InputIterator>, iterator>
 	insert(const_iterator it, InputIterator first, InputIterator last) {
-		_insert(it, first, last, typename std::iterator_traits<InputIterator>::iterator_category{});
+		_insert(it, first, last, typename STD::iterator_traits<InputIterator>::iterator_category{});
 		return it;
 	}
 	/**< Inserts [first, first+d). Useful if InputIterator is an input iterator only. */
@@ -274,17 +274,17 @@ public:
 		return it;
 	}
 
-	constexpr iterator insert(const_iterator it, std::initializer_list<value_type> ilist) {
-		_insert(it, ilist.begin(), ilist.end(), std::random_access_iterator_tag{});
+	constexpr iterator insert(const_iterator it, STD::initializer_list<value_type> ilist) {
+		_insert(it, ilist.begin(), ilist.end(), STD::random_access_iterator_tag{});
 		return it;
 	}
 
 	constexpr void push_back( const_reference x ) {insert(end(), x);}
-	constexpr void push_back( value_type&& x ) {insert(end(), std::move(x));}
+	constexpr void push_back( value_type&& x ) {insert(end(), STD::move(x));}
 
 	template <typename... Args>
 	constexpr void emplace_back(Args&&... args) {
-		emplace(end(), std::forward<Args>(args)...);
+		emplace(end(), STD::forward<Args>(args)...);
 	}
 
 	constexpr iterator erase(const_iterator first, const_iterator last) {
@@ -314,7 +314,7 @@ public:
 
 };
 
-template <typename T, std::size_t MaxN=defaultContainerSize>
+template <typename T, STD::size_t MaxN=defaultContainerSize>
 using StableVector = BasicStableVector<T, ChunkPool<T, MaxN>>;
 
 template <typename... A1, typename... A2>

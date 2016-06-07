@@ -26,7 +26,7 @@ namespace detail {
 
 	template <typename Arithmetic, typename InputIt>
 	constexpr auto parseSign( InputIt& first )
-	 -> typename std::conditional_t<std::is_integral<Arithmetic>{}, std::make_signed<Arithmetic>, std::remove_cv<Arithmetic>>::type
+	 -> typename STD::conditional_t<STD::is_integral<Arithmetic>{}, STD::make_signed<Arithmetic>, STD::remove_cv<Arithmetic>>::type
 	{
 		if (*first == '-') {
 			++first;
@@ -40,7 +40,7 @@ namespace detail {
 }
 
 /** \brief Extracts an integer value from the character range specified by [first, last).
- *         Very similar to std::strtol. Errors are indicated via the second member of the
+ *         Very similar to STD::strtol. Errors are indicated via the second member of the
  *         returned struct, which is of type PState.
  *
  *         Valid values for the base range from 2 to 36, but 0 is also one;
@@ -65,10 +65,10 @@ namespace detail {
  */
 template <typename Int, typename InputIt>
 constexpr auto strToInt( InputIt first, InputIt last, Int& res, int base=10 )
-	-> require<std::is_integral<Int>, ParserState<InputIt>>
+	-> require<STD::is_integral<Int>, ParserState<InputIt>>
 {
-	constexpr auto MAX = std::numeric_limits<Int>::max(),
-	               MIN = std::numeric_limits<Int>::lowest();
+	constexpr auto MAX = STD::numeric_limits<Int>::max(),
+	               MIN = STD::numeric_limits<Int>::lowest();
 
 	String digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -100,7 +100,7 @@ constexpr auto strToInt( InputIt first, InputIt last, Int& res, int base=10 )
 
 	res = 0;
 	bool read = false;
-	std::size_t found=0;
+	STD::size_t found=0;
 	while (first != last
 	   && (found = digits.rfind(toupper(*first), base-1)) != digits.npos)
 	{
@@ -131,13 +131,13 @@ constexpr auto strToInt( InputIt first, InputIt last, Int& res, int base=10 )
 }
 
 template <typename Int>
-constexpr auto strToInt( char const* str, std::size_t len, std::size_t* pos = 0, int base = 10 )
-	-> require<std::is_integral<Int>, Int> {
+constexpr auto strToInt( char const* str, STD::size_t len, STD::size_t* pos = 0, int base = 10 )
+	-> require<STD::is_integral<Int>, Int> {
 	Int ret = 0;
 
 	auto st = strToInt<Int>(str, str+len, ret, base);
-	AssertExcept<std::invalid_argument>(st.state != PState::Eof,  "Could not extract any integer");
-	AssertExcept<std::out_of_range>    (st.state != PState::Fail, "Integer represented is out of bounds");
+	AssertExcept<STD::invalid_argument>(st.state != PState::Eof,  "Could not extract any integer");
+	AssertExcept<STD::out_of_range>    (st.state != PState::Fail, "Integer represented is out of bounds");
 
 	if (pos)
 		*pos = st.iterator - str;
@@ -146,21 +146,21 @@ constexpr auto strToInt( char const* str, std::size_t len, std::size_t* pos = 0,
 }
 
 template <typename Int>
-constexpr auto strToInt( char const* str, std::size_t* pos = 0, int base = 10 )
-	-> require<std::is_integral<Int>, Int> {
+constexpr auto strToInt( char const* str, STD::size_t* pos = 0, int base = 10 )
+	-> require<STD::is_integral<Int>, Int> {
 	return strToInt<Int>(str, CharTraits<char>::length(str), pos, base);
 }
 
-template <typename Int, std::size_t N>
-constexpr auto strToInt( BasicString<char, N> const& str, std::size_t str_pos = 0,
-                         std::size_t* pos = 0, int base = 10 )
-	-> require<std::is_integral<Int>, Int> {
+template <typename Int, STD::size_t N>
+constexpr auto strToInt( BasicString<char, N> const& str, STD::size_t str_pos = 0,
+                         STD::size_t* pos = 0, int base = 10 )
+	-> require<STD::is_integral<Int>, Int> {
 	return strToInt<Int>(str.data()+str_pos, str.size(), pos, base);
 }
 
 template <typename Float, typename InputIt>
 constexpr auto strToFloat( InputIt first, InputIt last, Float& res )
-	-> require<std::is_floating_point<Float>, ParserState<InputIt>>
+	-> require<STD::is_floating_point<Float>, ParserState<InputIt>>
 {
 	String digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -205,11 +205,11 @@ constexpr auto strToFloat( InputIt first, InputIt last, Float& res )
 
 		switch (p-inf_str) {
 		case 2: case 7:
-			if (!std::numeric_limits<Float>::has_infinity) {
+			if (!STD::numeric_limits<Float>::has_infinity) {
 				return {first, PState::Fail};
 			}
 
-			res = sign * std::numeric_limits<Float>::infinity();
+			res = sign * STD::numeric_limits<Float>::infinity();
 			return {first, PState::Good};
 		default:
 			return {first, PState::Fail};
@@ -228,7 +228,7 @@ constexpr auto strToFloat( InputIt first, InputIt last, Float& res )
 		if (p-nan_str != 2)
 			return {first, PState::Eof};
 
-		if (not std::numeric_limits<Float>::has_quiet_NaN)
+		if (not STD::numeric_limits<Float>::has_quiet_NaN)
 			return {first, PState::Fail};
 
 		if (first != last && *first == '(') {
@@ -238,7 +238,7 @@ constexpr auto strToFloat( InputIt first, InputIt last, Float& res )
 				return {first, PState::Eof};
 		}
 
-		res = std::numeric_limits<Float>::quiet_NaN();
+		res = STD::numeric_limits<Float>::quiet_NaN();
 		return {first, PState::Good};
 	}
 	}
@@ -246,7 +246,7 @@ constexpr auto strToFloat( InputIt first, InputIt last, Float& res )
 	Float multiplier = 1;
 	for (; first != last; ++first)
 	{
-		std::size_t found = digits.rfind(toupper(*first), base-1);
+		STD::size_t found = digits.rfind(toupper(*first), base-1);
 		if (found == digits.npos) {
 			if (*first != '.' || multiplier != 1)
 				break;
@@ -256,7 +256,7 @@ constexpr auto strToFloat( InputIt first, InputIt last, Float& res )
 
 		const auto summand = sign*multiplier*Float(found);
 
-		constexpr auto bound = std::numeric_limits<Float>::max();
+		constexpr auto bound = STD::numeric_limits<Float>::max();
 		if (abs(res) > bound/base || abs(res)*base > bound-abs(summand)) {
 			res = bound;
 			return {first, PState::Fail};
@@ -291,13 +291,13 @@ constexpr auto strToFloat( InputIt first, InputIt last, Float& res )
 }
 
 template <typename Float>
-constexpr auto strToFloat( char const* str, std::size_t len, std::size_t* pos = 0 )
-	-> require<std::is_floating_point<Float>, Float> {
+constexpr auto strToFloat( char const* str, STD::size_t len, STD::size_t* pos = 0 )
+	-> require<STD::is_floating_point<Float>, Float> {
 	Float ret = 0;
 
 	auto st = strToFloat<Float>(str, str+len, ret);
-	AssertExcept<std::invalid_argument>(st.state != PState::Eof,  "Could not extract any integer");
-	AssertExcept<std::out_of_range>    (st.state != PState::Fail, "Floating point represented is out of bounds");
+	AssertExcept<STD::invalid_argument>(st.state != PState::Eof,  "Could not extract any number");
+	AssertExcept<STD::out_of_range>    (st.state != PState::Fail, "Floating point represented is out of bounds");
 
 	if (pos)
 		*pos = st.iterator - str;
@@ -306,8 +306,8 @@ constexpr auto strToFloat( char const* str, std::size_t len, std::size_t* pos = 
 }
 
 template <typename Float>
-constexpr auto strToFloat( char const* str, std::size_t* pos = 0 )
-	-> require<std::is_floating_point<Float>, Float> {
+constexpr auto strToFloat( char const* str, STD::size_t* pos = 0 )
+	-> require<STD::is_floating_point<Float>, Float> {
 	return strToFloat<Float>(str, CharTraits<char>::length(str), pos);
 }
 

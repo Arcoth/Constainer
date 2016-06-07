@@ -19,25 +19,25 @@ struct DefaultCopyTraits {
 	using reference = T&;
 	using const_reference = T const&;
 
-	static constexpr pointer copy(pointer s1, const_pointer s2, std::size_t n) {
+	static constexpr pointer copy(pointer s1, const_pointer s2, STD::size_t n) {
 		return Constainer::copy_n(s2, n, s1);
 	}
 
 	/**< This function is called to actually 'move', not copy. */
-	static constexpr pointer move(pointer s1, const_pointer s2, std::size_t n) {
+	static constexpr pointer move(pointer s1, const_pointer s2, STD::size_t n) {
 		return Constainer::move_n(s2, n, s1);
 	}
 
-	static constexpr pointer assign(pointer s, std::size_t n, const_reference a) {
+	static constexpr pointer assign(pointer s, STD::size_t n, const_reference a) {
 		return Constainer::fill_n(s, n, a);
 	}
 
 	/**< Called after erase has performed on elements in the container */
-	static constexpr void destroy(pointer, std::size_t) {}
+	static constexpr void destroy(pointer, STD::size_t) {}
 
 	template <typename U>
 	static constexpr void assign( reference r, U&& a ) {
-		r = std::forward<U>(a);
+		r = STD::forward<U>(a);
 	}
 };
 
@@ -45,10 +45,10 @@ struct DefaultCopyTraits {
 
 namespace Constainer { namespace detail{
 
-template <typename T, std::size_t MaxN, typename CopyTraits, std::size_t addBufferSize>
+template <typename T, STD::size_t MaxN, typename CopyTraits, STD::size_t addBufferSize>
 class BasicVector : private Array<T, MaxN+addBufferSize> {
 
-	template <typename, std::size_t, typename, std::size_t>
+	template <typename, STD::size_t, typename, STD::size_t>
 	friend class BasicVector;
 
 	using _base = Array<T, MaxN+addBufferSize>;
@@ -70,13 +70,13 @@ public:
 
 protected:
 	constexpr pointer _address(const_iterator i) {
-		static_assert( std::is_same<const_iterator, const_pointer>{},
+		static_assert( STD::is_same<const_iterator, const_pointer>{},
 		               "Requires const_iterator = const_pointer" );
 		return const_cast<pointer>(i);
 	}
 
 	constexpr pointer _remcv(const_iterator i) {
-		static_assert( std::is_same<const_iterator, const_pointer>{},
+		static_assert( STD::is_same<const_iterator, const_pointer>{},
 		               "Requires const_iterator = const_pointer" );
 		return const_cast<iterator>(i);
 	}
@@ -92,7 +92,7 @@ protected:
 	constexpr auto _data() {return this->_storage;}
 
 	constexpr void _verifySizeInc(size_type n) const {
-		AssertExcept<std::length_error>( size() <= MaxN-n, "Invalid attempt to increase container size" );
+		AssertExcept<STD::length_error>( size() <= MaxN-n, "Invalid attempt to increase container size" );
 	}
 	constexpr void _verifiedSizeInc(size_type n) {
 		_verifySizeInc(n); _size += n;
@@ -136,46 +136,46 @@ public:
 	}
 
 private:
-	constexpr BasicVector(const_pointer p, size_type l, std::false_type) : BasicVector(l) {
+	constexpr BasicVector(const_pointer p, size_type l, STD::false_type) : BasicVector(l) {
 		traits_type::copy(_data(), p, l);
 	}
-	constexpr BasicVector(const_pointer p, size_type l, std::true_type) : BasicVector(l) {
+	constexpr BasicVector(const_pointer p, size_type l, STD::true_type) : BasicVector(l) {
 		traits_type::move(_data(), p, l);
 	}
 
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicVector(ThisResized<OtherN> const& other, int) :
-		BasicVector(other.data(), other.size(), std::false_type()) {}
+		BasicVector(other.data(), other.size(), STD::false_type()) {}
 
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicVector(ThisResized<OtherN> && other, int) :
-		BasicVector(other.data(), other.size(), std::true_type())  {
+		BasicVector(other.data(), other.size(), STD::true_type())  {
 		other.clear();
 	}
 
 public:
 
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicVector(ThisResized<OtherN> const& other) : BasicVector(other, 0) {}
-	template <std::size_t OtherN>
-	constexpr BasicVector(ThisResized<OtherN>     && other) : BasicVector(std::move(other), 0) {}
+	template <STD::size_t OtherN>
+	constexpr BasicVector(ThisResized<OtherN>     && other) : BasicVector(STD::move(other), 0) {}
 
 	constexpr BasicVector(BasicVector const& other) : BasicVector(other, 0) {}
-	constexpr BasicVector(BasicVector&& other)      : BasicVector(std::move(other), 0) {}
+	constexpr BasicVector(BasicVector&& other)      : BasicVector(STD::move(other), 0) {}
 
-	constexpr BasicVector(std::initializer_list<value_type> ilist)
-		: BasicVector(std::begin(ilist), std::end(ilist)) {}
+	constexpr BasicVector(STD::initializer_list<value_type> ilist)
+		: BasicVector(STD::begin(ilist), STD::end(ilist)) {}
 
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicVector& operator=( ThisResized<OtherN> const& other ) {
-		AssertExcept<std::bad_alloc>( other.size() <= max_size() );
+		AssertExcept<STD::bad_alloc>( other.size() <= max_size() );
 		assign(other.begin(), other.end());
 		return *this;
 	}
 
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicVector& operator=( ThisResized<OtherN>&& other ) {
-		AssertExcept<std::bad_alloc>( other.size() <= max_size() );
+		AssertExcept<STD::bad_alloc>( other.size() <= max_size() );
 		assign(make_move_iterator(other.begin()), make_move_iterator(other.end()));
 		other.clear();
 		return *this;
@@ -185,9 +185,9 @@ public:
 	{ return operator=<>(other); }
 
 	constexpr BasicVector& operator=( BasicVector&& other )
-	{ return operator=<>(std::move(other)); }
+	{ return operator=<>(STD::move(other)); }
 
-	constexpr BasicVector& operator=( std::initializer_list<value_type> ilist )
+	constexpr BasicVector& operator=( STD::initializer_list<value_type> ilist )
 	{ assign(ilist); return *this; }
 
 	constexpr const_reverse_iterator crbegin() const {return rbegin();}
@@ -213,19 +213,19 @@ private:
 	     initialize a temporary of value_type is valid */
 	template <typename... Args>
 	constexpr auto _emplace_back( int, Args&&... args )
-	  -> decltype( void(value_type(std::forward<Args>(args)...)) ) {
-		push_back( value_type(std::forward<Args>(args)...) );
+	  -> decltype( void(value_type(STD::forward<Args>(args)...)) ) {
+		push_back( value_type(STD::forward<Args>(args)...) );
 	}
 	/**< … otherwise, try direct-list-initialization */
 	template <typename... Args>
 	constexpr void _emplace_back( float, Args&&... args ) {
-		push_back( value_type{std::forward<Args>(args)...} );
+		push_back( value_type{STD::forward<Args>(args)...} );
 	}
 
 	template <typename U>
 	constexpr void _push_back( U&& u ) {
 		_verifySizeInc(1);
-		traits_type::assign(*this->end(), std::forward<U>(u));
+		traits_type::assign(*this->end(), STD::forward<U>(u));
 		++_size;
 	}
 
@@ -233,14 +233,14 @@ public:
 
 	template <typename... Args>
 	constexpr void emplace_back( Args&&... args ) {
-		_emplace_back( 0, std::forward<Args>(args)... );
+		_emplace_back( 0, STD::forward<Args>(args)... );
 	}
 
 	constexpr void push_back( value_type const& v ) {
 		_push_back(v);
 	}
 	constexpr void push_back( value_type&& v ) {
-		_push_back(std::move(v));
+		_push_back(STD::move(v));
 	}
 
 	constexpr iterator erase( const_iterator first, const_iterator last ) {
@@ -257,7 +257,7 @@ public:
 
 private:
 	template <typename InputIt>
-	constexpr iterator _insert( iterator pos, InputIt first, InputIt last, std::input_iterator_tag ) {
+	constexpr iterator _insert( iterator pos, InputIt first, InputIt last, STD::input_iterator_tag ) {
 		while (first != last)
 			insert(pos++, *first++);
 		return pos;
@@ -270,7 +270,7 @@ private:
 		return pos;
 	}
 	template <typename ForwardIt>
-	constexpr iterator _insert( iterator pos, ForwardIt first, ForwardIt last, std::forward_iterator_tag ) {
+	constexpr iterator _insert( iterator pos, ForwardIt first, ForwardIt last, STD::forward_iterator_tag ) {
 		return _insert_n(pos, Constainer::distance(first, last), first);
 	}
 
@@ -278,7 +278,7 @@ private:
 	constexpr iterator _insert( const_iterator pos, U&& u ) {
 		auto it = _remcv(pos);
 		_createInsertionSpace(it, 1);
-		traits_type::assign(*it, std::forward<U>(u));
+		traits_type::assign(*it, STD::forward<U>(u));
 		return it;
 	}
 
@@ -286,14 +286,14 @@ public:
 	template <typename... Args>
 	constexpr iterator emplace( const_iterator i, Args&&... args ) {
 		// TODO: Avoid unnecessary copy (?)
-		return insert(i, value_type(std::forward<Args>(args)...));
+		return insert(i, value_type(STD::forward<Args>(args)...));
 	}
 
 	template <typename InputIt>
 	constexpr require<isInputIterator<InputIt>, iterator>
 	insert( const_iterator pos, InputIt first, InputIt last ) {
 		return _insert(_remcv(pos), first, last,
-		               typename std::iterator_traits<InputIt>::iterator_category{});
+		               typename STD::iterator_traits<InputIt>::iterator_category{});
 	}
 
 	template <typename InputIt>
@@ -303,7 +303,7 @@ public:
 	}
 
 	constexpr iterator insert( const_iterator pos, value_type const& v ) {return _insert(pos, v);}
-	constexpr iterator insert( const_iterator pos, value_type     && v ) {return _insert(pos, std::move(v));}
+	constexpr iterator insert( const_iterator pos, value_type     && v ) {return _insert(pos, STD::move(v));}
 
 	constexpr iterator insert( const_iterator pos, size_type n, const_reference v ) {
 		_createInsertionSpace(pos, n);
@@ -311,11 +311,11 @@ public:
 		return _remcv(pos);
 	}
 
-	constexpr iterator insert( const_iterator i, std::initializer_list<value_type> ilist ) {
+	constexpr iterator insert( const_iterator i, STD::initializer_list<value_type> ilist ) {
 		return insert(i, ilist.begin(), ilist.end());
 	}
 
-	constexpr void assign( std::initializer_list<value_type> ilist ) {
+	constexpr void assign( STD::initializer_list<value_type> ilist ) {
 		clear(); insert(ilist);
 	}
 
@@ -336,11 +336,11 @@ public:
 
 public:
 
-	template <std::size_t OtherMax, typename OtherTraits, std::size_t addBuffOther>
+	template <STD::size_t OtherMax, typename OtherTraits, STD::size_t addBuffOther>
 	constexpr void swap( BasicVector<value_type, OtherMax, OtherTraits, addBuffOther>& other ) {
-		AssertExcept<std::out_of_range>( other.size() < max_size() && size() < OtherMax, "Swap fails" );
+		AssertExcept<STD::out_of_range>( other.size() < max_size() && size() < OtherMax, "Swap fails" );
 
-		auto min = std::min(other.size(), size());
+		auto min = STD::min(other.size(), size());
 		// TODO: Use traits_type::assign calls to swap the ranges
 		Constainer::swap_ranges(other.begin(), other.begin() + min, begin());
 

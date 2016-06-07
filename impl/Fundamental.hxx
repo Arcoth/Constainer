@@ -43,9 +43,17 @@
 #define CONSTAINER_STRINGIZE(x) CONSTAINER_STRINGIZE_(x)
 #define CONSTAINER_DIAGNOSTIC_IGNORE(w)  _Pragma(CONSTAINER_STRINGIZE(GCC diagnostic ignored w))
 
+#include <experimental/type_traits>
+
 namespace Constainer {
 
-static constexpr std::size_t defaultContainerSize =
+// STD::experimental, std.
+namespace STD {
+	using namespace std;
+	using namespace experimental;
+}
+
+static constexpr STD::size_t defaultContainerSize =
 #ifdef CONSTAINER_DEFAULT_CONTAINER_SIZE
 	CONSTAINER_DEFAULT_CONTAINER_SIZE
 #else
@@ -53,14 +61,24 @@ static constexpr std::size_t defaultContainerSize =
 #endif // CONSTAINER_DEFAULT_CONTAINER_SIZE
 ;
 
+// For algorithms like stable_partition, who will work with an array of this size to improve
+// running time.
+static constexpr STD::size_t internalWorkingMemory =
+#ifdef CONSTAINER_INTERNAL_WORKING_MEMORY
+	CONSTAINER_INTERNAL_WORKING_MEMORY
+#else
+	defaultContainerSize
+#endif
+;
+
 template <typename T> struct identity {using type=T;};
 
 /**< More literal versions of enable_if */
 template <typename T, typename R=void>
-using require     = std::enable_if_t<T{}, R>;
+using require     = STD::enable_if_t<T{}, R>;
 
 template <typename T, typename R=void>
-using require_not = std::enable_if_t<!T{}, R>;
+using require_not = STD::enable_if_t<!T{}, R>;
 
 /**< Depends on the resolution of LWG #2296 */
 template <typename T>
@@ -74,6 +92,9 @@ constexpr auto addressof( T& t ) {
 
 template <typename T>
 constexpr decltype(auto) as_const(T const& obj) {return obj;}
+
+template <typename...>
+using void_t = void;
 
 /**< These templates are, despite being well-formed per se(!),
      useful for getting a type or value "printed" at compile-time.  */
@@ -89,7 +110,7 @@ template <typename, typename, typename=void>
 struct has_is_transparent {};
 
 template<typename Compare, typename T>
-struct has_is_transparent<Compare, T, std::void_t<typename Compare::is_transparent>>
+struct has_is_transparent<Compare, T, void_t<typename Compare::is_transparent>>
 { using type = T; };
 
 }
@@ -99,14 +120,14 @@ struct has_is_transparent<Compare, T, std::void_t<typename Compare::is_transpare
 namespace Constainer {
 
 template <typename T>
-std::false_type _assocTester(T, ...);
+STD::false_type _assocTester(T, ...);
 
 namespace detail {
 	template <typename T>
-	using assocWithNS = decltype(_assocTester(std::declval<T>()));
+	using assocWithNS = decltype(_assocTester(STD::declval<T>()));
 }
 
 template <typename T>
-std::true_type _assocTester(T, int);
+STD::true_type _assocTester(T, int);
 
 }

@@ -14,15 +14,15 @@
 namespace Constainer { namespace detail {
 
 template <typename StringType, typename T, typename P>
-constexpr require<std::is_floating_point<T>> writeDigitsReversed ( StringType& str, T t, int base, P digits ) {
+constexpr require<STD::is_floating_point<T>> writeDigitsReversed ( StringType& str, T t, int base, P digits ) {
 	do {
-		str += digits[ (std::size_t) remainder (t, base)];
+		str += digits[ (STD::size_t) remainder (t, base)];
 		t /= base;
 	}
 	while (t >= 1 || t <= -1);
 }
 template <typename StringType, typename T, typename P>
-constexpr require<std::is_integral<T>> writeDigitsReversed ( StringType& str, T t, int base, P digits ) {
+constexpr require<STD::is_integral<T>> writeDigitsReversed ( StringType& str, T t, int base, P digits ) {
 	do {
 		str += digits[t % base];
 		t /= base;
@@ -130,7 +130,7 @@ struct Parser {
 	template <typename StringType>
 	static constexpr void pad_unformatted ( StringType& str, Info const& info )
 	{
-		if (str.size() < (std::size_t)info.width) {
+		if (str.size() < (STD::size_t)info.width) {
 			auto needed = info.width - str.size();
 			switch (info.alignment) {
 				case Info::left_justified:
@@ -146,12 +146,12 @@ struct Parser {
 	}
 
 	template <bool needsSign, typename StringType>
-	static constexpr void pad_and_reverse ( std::bool_constant<needsSign>, StringType& str, Info const& info )
+	static constexpr void pad_and_reverse ( STD::bool_constant<needsSign>, StringType& str, Info const& info )
 	{
 		if (needsSign && str.back() != Tokens::minus && info.prepend != '\0')
 			str += info.prepend;
 
-		if (str.size() < (std::size_t)info.width)
+		if (str.size() < (STD::size_t)info.width)
 		{
 			auto needed = info.width - str.size();
 			if (info.alignment & Info::right_justified)
@@ -182,11 +182,11 @@ struct Parser {
 	static constexpr StringType handleAbnormality ( Real r, bool upper ) {
 		StringType s;
 
-		if (r < std::numeric_limits<Real>::lowest() ) {
+		if (r < STD::numeric_limits<Real>::lowest() ) {
 			s = Tokens::minus;
 			r = -r;
 		}
-		if (r > std::numeric_limits<Real>::max() )
+		if (r > STD::numeric_limits<Real>::max() )
 			s += upper? Tokens::upperInf : Tokens::lowerInf;
 		else if (r != r)
 			s = upper? Tokens::upperNaN : Tokens::lowerNaN;
@@ -196,7 +196,7 @@ struct Parser {
 
 	template <typename StringType, typename Arg>
 	static constexpr auto printFloat (bool trimTrailingZeroes, Info const& info, Arg arg, bool* rounding_overflow=nullptr)
-	  -> require<std::is_floating_point<Arg>, StringType>
+	  -> require<STD::is_floating_point<Arg>, StringType>
 	{
 		auto str = handleAbnormality<StringType>(arg, info.upper);
 		if (not str.empty())
@@ -212,10 +212,11 @@ struct Parser {
 			str += Tokens::decimalPoint;
 		auto arg_tmp = fractional (arg);
 		auto digits = Tokens::get_digits (info.upper);
+
 		for (; precision > 1; --precision)
 		{
 			arg_tmp *= info.base;
-			std::size_t rem = arg_tmp;
+			STD::size_t rem = arg_tmp;
 			str += digits[rem];
 			arg_tmp -= rem;
 		}
@@ -242,7 +243,7 @@ struct Parser {
 				if (pos == 0)
 				{
 					++arg;
-					if (arg >= info.base and rounding_overflow)
+					if (arg >= info.base and rounding_overflow != nullptr)
 					{
 						arg = 1;
 						*rounding_overflow = true;
@@ -254,7 +255,7 @@ struct Parser {
 
 		if (trimTrailingZeroes) {
 			str.erase(str.find_last_not_of(Tokens::zero)+1); // Remove trailing zeroes
-			if (str.back() == Tokens::decimalPoint && not info.alternative)
+			if (str.back() == Tokens::decimalPoint and not info.alternative)
 				str.pop_back();
 		}
 
@@ -262,6 +263,7 @@ struct Parser {
 		writeDigitsReversed (str, arg, info.base, digits);
 		if (negative)
 			str += '-';
+
 		return str;
 	}
 
@@ -275,11 +277,12 @@ struct Parser {
 		constexpr CharT e_letter_arr[2][2] = {{Tokens::lowerExp , Tokens::upperExp},
 		                                      {Tokens::lowerHexp, Tokens::upperHexp}};
 		auto e_letter = e_letter_arr[info.base == 16][info.upper];
+
 		if (info.precision < 0)
 		{
 			if (info.base == 16)
 				// ::digits includes signbit, so +2 instead of +3
-				info.precision = (std::numeric_limits<Arg>::digits + 2) / 4;
+				info.precision = (STD::numeric_limits<Arg>::digits + 2) / 4;
 			else
 				info.precision = 6;
 		}
@@ -316,7 +319,7 @@ struct Parser {
 	template <typename StringType, typename Arg>
 	static constexpr StringType printExponential (bool trimTrailingZeroes, Info const& info, Arg arg)
 	{
-		static_assert( std::is_floating_point<Arg>{}, "Invalid argument for exponential FP-formatting!" );
+		static_assert( STD::is_floating_point<Arg>{}, "Invalid argument for exponential FP-formatting!" );
 
 		auto norm = normalize (2, arg);
 		if (info.base == 10) {
@@ -339,7 +342,7 @@ struct Parser {
 	template <typename StringType, typename Arg>
 	static constexpr StringType printFloatHybrid (Info const& info, Arg arg)
 	{
-		static_assert( std::is_floating_point<Arg>{}, "Invalid argument for hybrid FP-formatting!" );
+		static_assert( STD::is_floating_point<Arg>{}, "Invalid argument for hybrid FP-formatting!" );
 
 		auto str = handleAbnormality<StringType>(arg, info.upper);
 		if (not str.empty() )
@@ -380,7 +383,7 @@ struct Parser {
 	template <typename StringType, typename Arg>
 	static constexpr StringType printInt (Info const& info, Arg arg)
 	{
-		static_assert( std::is_integral<Arg>{}, "Invalid use of integer formatting!" );
+		static_assert( STD::is_integral<Arg>{}, "Invalid use of integer formatting!" );
 
 		// Default precision for integers is zero.
 		int precision = info.precision >= 0? info.precision : 1;
@@ -389,7 +392,7 @@ struct Parser {
 		// If precision is zero and the argument is zero, conversion results in no characters
 		if (arg != Arg (0) )
 			writeDigitsReversed (str, arg, info.base, Tokens::get_digits(info.upper) );
-		if (str.size() < (std::size_t)precision)
+		if (str.size() < (STD::size_t)precision)
 			str.append (precision-str.size(), Tokens::zero);
 		// If the precision does not cause an additional 0 to be prepended, '#' does.
 		else if (info.base == 8 && info.alternative)
@@ -443,7 +446,7 @@ struct Parser {
 	struct handleFormatSpecifier<Tokens::character, ch...> : handleRest<ch...> {
 		template <typename StringType>
 		constexpr void evaluate ( StringType& string, CharT c ) {
-			string += this->pad_and_reverse (std::false_type {}, StringType{c} );
+			string += this->pad_and_reverse (STD::false_type {}, StringType{c} );
 		}
 	};
 	template <CharT... ch>
@@ -459,8 +462,8 @@ struct Parser {
 	struct handleFormatSpecifier<Tokens::decimalInt, ch...> : handleFormatSpecifier<Tokens::universal, ch...> {
 		template <typename StringType, typename Arg>
 		constexpr void evaluate ( StringType& string, Arg arg ) {
-			static_assert( std::is_integral<Arg>{}, "Invalid use of format specifier for (signed) integers!" );
-			handleFormatSpecifier<Tokens::universal, ch...>::evaluate(string, (std::make_signed_t<Arg>)arg);
+			static_assert( STD::is_integral<Arg>{}, "Invalid use of format specifier for (signed) integers!" );
+			handleFormatSpecifier<Tokens::universal, ch...>::evaluate(string, (STD::make_signed_t<Arg>)arg);
 		}
 	};
 
@@ -468,8 +471,8 @@ struct Parser {
 	struct handleFormatSpecifier<Tokens::unsignedInt, ch...> : handleFormatSpecifier<Tokens::universal, ch...> {
 		template <typename StringType, typename Arg>
 		constexpr void evaluate ( StringType& string, Arg arg ) {
-			static_assert( std::is_integral<Arg>{}, "Invalid use of format specifier for (unsigned) integers!" );
-			handleFormatSpecifier<Tokens::universal, ch...>::evaluate(string, (std::make_unsigned_t<Arg>)arg);
+			static_assert( STD::is_integral<Arg>{}, "Invalid use of format specifier for (unsigned) integers!" );
+			handleFormatSpecifier<Tokens::universal, ch...>::evaluate(string, (STD::make_unsigned_t<Arg>)arg);
 		}
 	};
 	template <CharT... ch>
@@ -485,7 +488,7 @@ struct Parser {
 		template <typename StringType, typename Arg>
 		constexpr void evaluate ( StringType& string, Arg arg ) {
 			// Hexfloat fractional trailing zeroes are trimmed (at least with libc++)
-			string += this->pad_and_reverse (std::true_type {}, Parser::printExponential<StringType>(this->base==16, *this, arg) );
+			string += this->pad_and_reverse (STD::true_type {}, Parser::printExponential<StringType>(this->base==16, *this, arg) );
 		}
 	};
 	template <CharT... ch>
@@ -500,7 +503,7 @@ struct Parser {
 	struct handleFormatSpecifier<Tokens::lowerHybrid, ch...> : handleRest<ch...> {
 		template <typename StringType, typename Arg>
 		constexpr void evaluate ( StringType& str, Arg arg ) {
-			str += this->pad_and_reverse (std::true_type {}, printFloatHybrid<StringType>(*this, arg) );
+			str += this->pad_and_reverse (STD::true_type {}, printFloatHybrid<StringType>(*this, arg) );
 		}
 	};
 	template <CharT... ch>
@@ -515,15 +518,15 @@ struct Parser {
 	struct handleFormatSpecifier<Tokens::lowerFixed, ch...> : handleRest<ch...> {
 		template <typename StringType, typename Arg>
 		constexpr void evaluate ( StringType& string, Arg arg ) {
-			string += this->pad_and_reverse(std::true_type{}, printFloat<StringType>(std::false_type{}, *this, arg));
+			string += this->pad_and_reverse(STD::true_type{}, printFloat<StringType>(STD::false_type{}, *this, arg));
 		}
 	};
 	template <CharT... ch>
-	struct handleFormatSpecifier<Tokens::upperHexfloat, ch...> : handleFormatSpecifier<Tokens::lowerHexFloat, ch...> {
+	struct handleFormatSpecifier<Tokens::upperHexfloat, ch...> : handleFormatSpecifier<Tokens::lowerHexfloat, ch...> {
 		template <typename StringType, typename Arg>
 		constexpr void evaluate ( StringType& string, Arg arg ) {
 			this->upper = true;
-			return handleFormatSpecifier<Tokens::lowerHexFloat, ch...>::evaluate (string, arg);
+			return handleFormatSpecifier<Tokens::lowerHexfloat, ch...>::evaluate (string, arg);
 		}
 	};
 	template <CharT... ch>
@@ -573,13 +576,13 @@ struct Parser {
 	{
 	private:
 		template <typename StringType>
-		struct buffer_t : std::basic_streambuf<CharT>
+		struct buffer_t : STD::basic_streambuf<CharT>
 		{
 		private:
 			StringType _str;
 
 		public:
-			using typename std::basic_streambuf<CharT>::int_type;
+			using typename STD::basic_streambuf<CharT>::int_type;
 
 			auto const& str() const {return _str;}
 
@@ -591,7 +594,7 @@ struct Parser {
 				return i;
 			}
 
-			std::streamsize xsputn (CharT const* s, std::streamsize count) override {
+			STD::streamsize xsputn (CharT const* s, STD::streamsize count) override {
 				_str.append (s, count);
 				return count;
 			}
@@ -601,32 +604,32 @@ struct Parser {
 
 		template <typename StringType>
 		constexpr void call ( detail::rank<1>, StringType& str, CharT const* s ) {
-			str += this->pad_and_reverse (std::false_type {}, printString<StringType>(this->precision, s) );
+			str += this->pad_unformatted (printString<StringType>(this->precision, s));
 		}
 
 		template <typename StringType>
 		constexpr void call ( detail::rank<1>, StringType& str, CharT c ) {
-			str += this->pad_and_reverse (std::false_type {}, StringType{c});
+			str += this->pad_and_reverse (STD::false_type {}, StringType{c});
 		}
 
 		template <typename StringType, typename Arg>
 		constexpr auto call ( detail::rank<1>, StringType& str, Arg arg )
-		  -> require<std::is_integral<Arg>>
+		  -> require<STD::is_integral<Arg>>
 		{
-			str += this->pad_and_reverse (std::is_signed<Arg>{}, printInt<StringType>(*this, arg) );
+			str += this->pad_and_reverse (STD::is_signed<Arg>{}, printInt<StringType>(*this, arg) );
 		}
 		template <typename StringType, typename Arg>
 		constexpr auto call ( detail::rank<1>, StringType& str, Arg arg )
-		  -> require<std::is_floating_point<Arg>>
+		  -> require<STD::is_floating_point<Arg>>
 		{
-			str += this->pad_and_reverse (std::true_type{}, printFloatHybrid<StringType>(*this, arg) );
+			str += this->pad_and_reverse (STD::true_type{}, printFloatHybrid<StringType>(*this, arg) );
 		}
 		template <typename StringType, typename Arg>
 		void call ( detail::rank<10>, StringType& str, Arg const& arg )
 		{
 			buffer_t<StringType> buf;
 			// Use standard library char_traits
-			std::basic_ostream<CharT> stream (&buf);
+			STD::basic_ostream<CharT> stream (&buf);
 			applyInfoToStream(stream, *this);
 			stream << arg;
 			str += this->pad_unformatted( buf.str() );
@@ -647,7 +650,7 @@ struct Parser {
 		}
 	};
 	template <CharT c, CharT... ch>
-	struct handlePrecisionDigits<std::enable_if_t<Tokens::is_dec_digit (c) >, c, ch...>
+	struct handlePrecisionDigits<STD::enable_if_t<Tokens::is_dec_digit (c) >, c, ch...>
 		: handlePrecisionDigits<void, ch...>
 	{
 		template <typename StringType, typename Arg>
@@ -660,91 +663,91 @@ struct Parser {
 	};
 
 	/**< Primary template is not defined. If a decimal integer follows *, it must be part of an index terminating with $. */
-	template <std::size_t, typename, CharT... ch>
+	template <STD::size_t, typename, CharT... ch>
 	struct handlePrecisionIndex;
-	template <std::size_t precision_index, CharT c, CharT... ch>
-	struct handlePrecisionIndex<precision_index, std::enable_if_t<Tokens::is_dec_digit(c)>, c, ch...>
+	template <STD::size_t precision_index, CharT c, CharT... ch>
+	struct handlePrecisionIndex<precision_index, STD::enable_if_t<Tokens::is_dec_digit(c)>, c, ch...>
 		: handlePrecisionIndex<precision_index*10 + c-Tokens::zero, void, ch...> {};
-	template <std::size_t precision_index, CharT... ch>
+	template <STD::size_t precision_index, CharT... ch>
 	struct handlePrecisionIndex<precision_index, void, Tokens::dollar, ch...>
 		: handleFormatSpecifier<ch...> {
-		template <std::size_t index, typename StringType, typename ArgsTuple>
+		template <STD::size_t index, typename StringType, typename ArgsTuple>
 		constexpr void evaluate ( StringType& string, ArgsTuple const& args ) {
-			this->precision = std::get<precision_index-1>(args);
-			handleFormatSpecifier<ch...>::template evaluate (string, std::get<index>(args));
+			this->precision = STD::get<precision_index-1>(args);
+			handleFormatSpecifier<ch...>::template evaluate (string, STD::get<index>(args));
 		}
 	};
 
 	template <typename, CharT... ch>
 	struct handlePrecision : handleFormatSpecifier<ch...>
 	{
-		template <IndexConsistency, std::size_t index, typename StringType, typename ArgsTuple>
+		template <IndexConsistency, STD::size_t index, typename StringType, typename ArgsTuple>
 		constexpr void evaluate ( StringType& string, ArgsTuple const& args ) {
-			handleFormatSpecifier<ch...>::evaluate (string, std::get<index>(args));
+			handleFormatSpecifier<ch...>::evaluate (string, STD::get<index>(args));
 		}
 	};
 	template <typename LessSpecialized, CharT... ch>
 	struct handlePrecision<LessSpecialized, Tokens::decimalPoint, Tokens::asterisk, ch...>  : handleFormatSpecifier<ch...>
 	{
 		static constexpr auto indexLeap = handleFormatSpecifier<ch...>::indexLeap + 1;
-		template <IndexConsistency consistency, std::size_t index, typename StringType, typename ArgsTuple>
+		template <IndexConsistency consistency, STD::size_t index, typename StringType, typename ArgsTuple>
 		constexpr void evaluate ( StringType& string, ArgsTuple const& args )
 		{
 			_assertRunning<consistency>();
-			this->precision = std::get<index> (args);
-			handleFormatSpecifier<ch...>::evaluate (string, std::get<index+1> (args) );
+			this->precision = STD::get<index> (args);
+			handleFormatSpecifier<ch...>::evaluate (string, STD::get<index+1> (args) );
 		}
 	};
 	template <CharT c, CharT... ch>
-	struct handlePrecision<std::enable_if_t<Tokens::is_dec_digit(c)>, Tokens::decimalPoint, Tokens::asterisk, c, ch...>
+	struct handlePrecision<STD::enable_if_t<Tokens::is_dec_digit(c)>, Tokens::decimalPoint, Tokens::asterisk, c, ch...>
 		: handlePrecisionIndex<c-Tokens::zero, void, ch...>
 	{
-		template <IndexConsistency consistency, std::size_t index, typename StringType, typename ArgsTuple>
+		template <IndexConsistency consistency, STD::size_t index, typename StringType, typename ArgsTuple>
 		constexpr void evaluate ( StringType& string, ArgsTuple const& args )
 		{
 			_assertNotRunning<consistency>();
-			this->precision = std::get<index> (args);
+			this->precision = STD::get<index> (args);
 			handlePrecisionIndex<c-Tokens::zero, void, ch...>::template evaluate <index> (string, args);
 		}
 	};
 	template <typename LessSpecialized, CharT... ch>
 	struct handlePrecision<LessSpecialized, Tokens::decimalPoint, ch...> : handlePrecisionDigits<void, ch...>
 	{
-		template <IndexConsistency, std::size_t index, typename StringType, typename ArgsTuple>
+		template <IndexConsistency, STD::size_t index, typename StringType, typename ArgsTuple>
 		constexpr void evaluate ( StringType& string, ArgsTuple const& args )
 		{
 			this->precision = 0;
-			handlePrecisionDigits<void, ch...>::template evaluate (string, std::get<index>(args) );
+			handlePrecisionDigits<void, ch...>::template evaluate (string, STD::get<index>(args) );
 		}
 	};
 
 	template <typename, CharT... ch> struct handleWidth;
 
-	template <std::size_t width_or_index, typename, CharT... ch>
+	template <STD::size_t width_or_index, typename, CharT... ch>
 	struct handleWidthDigits : handlePrecision<void, ch...> {
-		template <IndexConsistency consistency, std::size_t index, typename StringType, typename ArgsTuple>
+		template <IndexConsistency consistency, STD::size_t index, typename StringType, typename ArgsTuple>
 		constexpr void evaluate ( StringType& string, ArgsTuple const& args ) {
 			this->width = width_or_index;
 			handlePrecision<void, ch...>::template evaluate <consistency, index> (string, args);
 		}
 	};
-	template <std::size_t width_or_index, CharT c, CharT... ch>
-	struct handleWidthDigits<width_or_index, std::enable_if_t<Tokens::is_dec_digit (c) >, c, ch...>
+	template <STD::size_t width_or_index, CharT c, CharT... ch>
+	struct handleWidthDigits<width_or_index, STD::enable_if_t<Tokens::is_dec_digit (c) >, c, ch...>
 		: handleWidthDigits<width_or_index*10 + c-Tokens::zero, void, ch...> {};
 
 	/**< Primary template is not defined. If a decimal integer follows *, it must be part of an index terminating with $. */
-	template <std::size_t, typename, CharT... ch>
+	template <STD::size_t, typename, CharT... ch>
 	struct handleWidthIndex;
-	template <std::size_t width_index, CharT c, CharT... ch>
-	struct handleWidthIndex<width_index, std::enable_if_t<Tokens::is_dec_digit(c)>, c, ch...>
+	template <STD::size_t width_index, CharT c, CharT... ch>
+	struct handleWidthIndex<width_index, STD::enable_if_t<Tokens::is_dec_digit(c)>, c, ch...>
 		: handleWidthIndex<width_index*10 + c-Tokens::zero, void, ch...> {};
-	template <std::size_t width_index, CharT... ch>
+	template <STD::size_t width_index, CharT... ch>
 	struct handleWidthIndex<width_index, void, Tokens::dollar, ch...>
 		: handlePrecision<void, ch...> {
-		template <IndexConsistency consistency, std::size_t index, typename StringType, typename ArgsTuple>
+		template <IndexConsistency consistency, STD::size_t index, typename StringType, typename ArgsTuple>
 		constexpr void evaluate ( StringType& string, ArgsTuple const& args ) {
 			_assertNotRunning<consistency>();
-			this->width = std::get<width_index-1>(args);
+			this->width = STD::get<width_index-1>(args);
 			handlePrecision<void, ch...>::template evaluate <IndexConsistency::NotRunning, index> (string, args);
 		}
 	};
@@ -755,11 +758,11 @@ struct Parser {
 	struct handleWidth<LessSpecialized, Tokens::asterisk, ch...> : handlePrecision<void, ch...>
 	{
 		static constexpr auto indexLeap = handlePrecision<void, ch...>::indexLeap + 1;
-		template <IndexConsistency consistency, std::size_t index, typename StringType, typename ArgsTuple>
+		template <IndexConsistency consistency, STD::size_t index, typename StringType, typename ArgsTuple>
 		constexpr void evaluate ( StringType& string, ArgsTuple const& args )
 		{
 			_assertRunning<consistency>();
-			this->width = std::size_t (std::get<index> (args) );
+			this->width = STD::size_t (STD::get<index> (args) );
 			// negative width results in '-' being set and the corresponding positive width
 			if (this->width < 0)
 			{
@@ -770,10 +773,10 @@ struct Parser {
 		}
 	};
 	template <CharT c, CharT... ch>
-	struct handleWidth<std::enable_if_t<Tokens::is_dec_digit(c)>, Tokens::asterisk, c, ch...>
+	struct handleWidth<STD::enable_if_t<Tokens::is_dec_digit(c)>, Tokens::asterisk, c, ch...>
 		: handleWidthIndex<c-Tokens::zero, void, ch...> {};
 	template <CharT c, CharT... ch>
-	struct handleWidth<std::enable_if_t<Tokens::is_dec_digit(c)>, c, ch...>
+	struct handleWidth<STD::enable_if_t<Tokens::is_dec_digit(c)>, c, ch...>
 		: handleWidthDigits<c-Tokens::zero, void, ch...> {};
 
 	template <CharT... ch>
@@ -782,7 +785,7 @@ struct Parser {
 #define CONSTAINER_HANDLE_WIDTH_SPEC(c, ...)                                 \
 	template <CharT... ch>                                                   \
 	struct handleFlags<c, ch...> : handleFlags<ch...> {                      \
-		template <IndexConsistency C, std::size_t I, typename S, typename A> \
+		template <IndexConsistency C, STD::size_t I, typename S, typename A> \
 		constexpr void evaluate( S& s, A const& args ) {                     \
 			__VA_ARGS__                                                      \
 			handleFlags<ch...>::template evaluate<C, I>(s, args);            \
@@ -806,8 +809,8 @@ struct Parser {
 	struct genIndexInfo {
 	private:
 		struct indexInfo {
-			std::size_t index=0;
-			std::size_t read=1; // For the terminating char
+			STD::size_t index=0;
+			STD::size_t read=1; // For the terminating char
 			bool isPercentSignTerm=false;
 		};
 		static constexpr indexInfo isIndex(CharT const* str) {
@@ -832,38 +835,38 @@ struct Parser {
 	};
 
 	/**< The bool parameter is true if we have a format specifier a la %2%, as e.g. allowed by Boost.Format. */
-	template <bool isPercentTerminated, typename Arr, typename=std::make_index_sequence<sizeof(Arr::str)-Arr::info.read>>
+	template <bool isPercentTerminated, typename Arr, typename=STD::make_index_sequence<sizeof(Arr::str)-Arr::info.read>>
 	struct handleArgIndex;
-	template <typename Arr, std::size_t... indices>
-	struct handleArgIndex<false, Arr, std::index_sequence<indices...>>
+	template <typename Arr, STD::size_t... indices>
+	struct handleArgIndex<false, Arr, STD::index_sequence<indices...>>
 		: handleFlags<Arr::str[Arr::info.read + indices]...> {
-		template <IndexConsistency C, std::size_t I, typename StringType, typename ArgsTuple>
+		template <IndexConsistency C, STD::size_t I, typename StringType, typename ArgsTuple>
 		constexpr void evaluate( StringType& string, ArgsTuple const& args ) {
 			_assertNotRunning<C>();
 			handleFlags<Arr::str[Arr::info.read + indices]...>::template evaluate<IndexConsistency::NotRunning, Arr::info.index-1>(string, args);
 		}
 	};
-	template <typename Arr, std::size_t... indices>
-	struct handleArgIndex<true, Arr, std::index_sequence<indices...>>
+	template <typename Arr, STD::size_t... indices>
+	struct handleArgIndex<true, Arr, STD::index_sequence<indices...>>
 		: handleFormatSpecifier<Tokens::universal> {
 
-		template <IndexConsistency C, std::size_t, typename StringType, typename ArgsTuple>
+		template <IndexConsistency C, STD::size_t, typename StringType, typename ArgsTuple>
 		constexpr void evaluate( StringType& string, ArgsTuple const& args ) {
 			_assertNotRunning<C>();
-			handleFormatSpecifier<Tokens::universal>::evaluate(string, std::get<Arr::info.index-1>(args) );
+			handleFormatSpecifier<Tokens::universal>::evaluate(string, STD::get<Arr::info.index-1>(args) );
 		}
 	};
 
 	template <typename, CharT... ch>
 	struct handleArgIndexOpt : handleFlags<ch...> {
-		template <IndexConsistency C, std::size_t I, typename StringType, typename ArgsTuple>
+		template <IndexConsistency C, STD::size_t I, typename StringType, typename ArgsTuple>
 		constexpr void evaluate( StringType& string, ArgsTuple const& args ) {
 			_assertRunning<C>();
 			handleFlags<ch...>::template evaluate<IndexConsistency::Running, I>(string, args);
 		}
 	};
 	template <CharT... ch>
-	struct handleArgIndexOpt<std::enable_if_t<genIndexInfo<ch...>::info.read != 0>, ch...>
+	struct handleArgIndexOpt<STD::enable_if_t<genIndexInfo<ch...>::info.read != 0>, ch...>
 		: handleArgIndex<genIndexInfo<ch...>::info.isPercentSignTerm, genIndexInfo<ch...>> {};
 
 	template <typename P>
@@ -885,13 +888,13 @@ struct Parser {
 		static constexpr auto formatSpecPos = findFirstFormatSpec(str)-str;
 		static_assert (formatSpecPos < sizeof str);
 
-		template <IndexConsistency, std::size_t, typename StringType, typename ArgsTuple>
-		constexpr void call ( StringType& string, std::index_sequence<>, ArgsTuple const&) {
+		template <IndexConsistency, STD::size_t, typename StringType, typename ArgsTuple>
+		constexpr void call ( StringType& string, STD::index_sequence<>, ArgsTuple const&) {
 			string.append(str, sizeof(str)-1);
 		}
 
-		template <IndexConsistency consistency, std::size_t index, std::size_t... indices, typename StringType, typename ArgsTuple>
-		constexpr void call ( StringType& string, std::index_sequence<indices...>, ArgsTuple const& args )
+		template <IndexConsistency consistency, STD::size_t index, STD::size_t... indices, typename StringType, typename ArgsTuple>
+		constexpr void call ( StringType& string, STD::index_sequence<indices...>, ArgsTuple const& args )
 		{
 			string.append(str, formatSpecPos-1);
 			using handle_type = handleArgIndexOpt<void, str[formatSpecPos+indices]...>;
@@ -900,21 +903,21 @@ struct Parser {
 			next_parser_type {}.template call<consistency, index + handle_type::indexLeap>(string, args);
 		}
 
-		template <IndexConsistency C, std::size_t I, typename StringType, typename ArgsTuple>
+		template <IndexConsistency C, STD::size_t I, typename StringType, typename ArgsTuple>
 		constexpr void call (StringType& string, ArgsTuple const& args) {
-			call<C, I>(string, std::make_index_sequence<sizeof(str)-1-formatSpecPos> {}, args);
+			call<C, I>(string, STD::make_index_sequence<sizeof(str)-1-formatSpecPos> {}, args);
 		}
 
 	public:
 		template <typename StringType, typename... Args>
 		constexpr StringType evaluate( Args&& ... args ) {
 			StringType s;
-			call<IndexConsistency::NoCommitment, 0>( s, std::forward_as_tuple(std::forward<Args>(args)...) );
+			call<IndexConsistency::NoCommitment, 0>( s, STD::forward_as_tuple(STD::forward<Args>(args)...) );
 			return s;
 		}
 		template <typename... Args>
 		constexpr auto operator()( Args&& ... args ) {
-			return evaluate<BasicString<CharT, 256>>(std::forward<Args>(args)...);
+			return evaluate<BasicString<CharT, 256>>(STD::forward<Args>(args)...);
 		}
 	};
 
@@ -930,9 +933,10 @@ constexpr CharT Parser<CharT, Tokens, Traits>::parse<c...>::str[];
  "EWG feedback was that they didn't want to accept the core language feature without some library support.
   Since then, two papers have proposed such support […] At this point, it looks likely that
   one of these will be accepted in C++17; […]" */
-  // For clang
 CONSTAINER_DIAGNOSTIC_PUSH
+#ifdef __clang__
 CONSTAINER_DIAGNOSTIC_IGNORE("-Wgnu-string-literal-operator-template")
+#endif // __clang__
 template <typename CharT, CharT... ch>
 constexpr typename detail::Parser<CharT>::template parse<ch...> operator""_ConstainerStaticPrintf() {return {};}
 CONSTAINER_DIAGNOSTIC_POP

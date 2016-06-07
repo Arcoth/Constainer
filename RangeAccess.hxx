@@ -16,39 +16,39 @@ namespace Constainer {
 
 		template <typename T>
 		constexpr auto _begin(rank<0>, T&& t)
-		-> decltype(require_not<assocWithNS<T>>{}, begin(std::forward<T>(t)))
-		                                    {return begin(std::forward<T>(t));}
+		-> decltype(require_not<assocWithNS<T>>{}, begin(STD::forward<T>(t)))
+		                                    {return begin(STD::forward<T>(t));}
 		template <typename T>
 		constexpr auto   _end(rank<0>, T&& t)
-		-> decltype(require_not<assocWithNS<T>>{}, end(std::forward<T>(t)))
-		                                    {return end(std::forward<T>(t));}
+		-> decltype(require_not<assocWithNS<T>>{}, end(STD::forward<T>(t)))
+		                                    {return end(STD::forward<T>(t));}
 
 		template <typename T>
 		constexpr auto _begin(rank<1>, T&& t)
-		-> decltype(std::forward<T>(t).begin())
-		    {return std::forward<T>(t).begin();}
+		-> decltype(STD::forward<T>(t).begin())
+		    {return STD::forward<T>(t).begin();}
 		template <typename T>
 		constexpr auto _end  (rank<1>, T&& t)
-		-> decltype(std::forward<T>(t).  end())
-		    {return std::forward<T>(t).  end();}
+		-> decltype(STD::forward<T>(t).  end())
+		    {return STD::forward<T>(t).  end();}
 
-		template <typename T, std::size_t N>
+		template <typename T, STD::size_t N>
 		constexpr auto _begin(rank<2>, T(&t)[N]) {return t;}
-		template <typename T, std::size_t N>
+		template <typename T, STD::size_t N>
 		constexpr auto _end  (rank<2>, T(&t)[N]) {return t+N;}
 
-		template <typename T, std::size_t N>
+		template <typename T, STD::size_t N>
 		constexpr auto _begin(rank<2>, T(&&t)[N]) {return t;}
-		template <typename T, std::size_t N>
+		template <typename T, STD::size_t N>
 		constexpr auto _end  (rank<2>, T(&&t)[N]) {return t+N;}
 	}
 
 	template <typename T>
 	constexpr decltype(auto) begin(T&& t)
-	{return detail::_begin(detail::rank<0>(), std::forward<T>(t));}
+	{return detail::_begin(detail::rank<0>(), STD::forward<T>(t));}
 	template <typename T>
 	constexpr decltype(auto) end  (T&& t)
-	{return detail::_end  (detail::rank<0>(), std::forward<T>(t));}
+	{return detail::_end  (detail::rank<0>(), STD::forward<T>(t));}
 
 	template <typename T>
 	constexpr auto rbegin(T& t) {return make_reverse_iterator(  end(t));}
@@ -63,12 +63,12 @@ namespace Constainer {
 	/*! decayed_begin/_end behave similar to begin/end, but return a pointer to the
 	    first underlying element if the argument is a multi-dimensional array. */
 
-	template <typename T, require<std::is_array<T>, std::size_t> N>
-	constexpr std::remove_all_extents_t<T>* decayed_begin(T(&c)[N])
+	template <typename T, require<STD::is_array<T>, STD::size_t> N>
+	constexpr STD::remove_all_extents_t<T>* decayed_begin(T(&c)[N])
 	{ return decayed_begin(*c); }
 
-	template <typename T, require<std::is_array<T>, std::size_t> N>
-	constexpr std::remove_all_extents_t<T>* decayed_end  (T(&c)[N])
+	template <typename T, require<STD::is_array<T>, STD::size_t> N>
+	constexpr STD::remove_all_extents_t<T>* decayed_end  (T(&c)[N])
 	{ return decayed_end  (*c); }
 
 	template <typename T>
@@ -79,8 +79,8 @@ namespace Constainer {
 	template <typename T>
 	constexpr auto size(T& t) -> decltype(t.size()) {return t.size();}
 
-	template <typename T, std::size_t N>
-	constexpr std::size_t size(T (&)[N]) {return N;}
+	template <typename T, STD::size_t N>
+	constexpr STD::size_t size(T (&)[N]) {return N;}
 
 	/**< IteratorRange, useful in e.g. range-based for with two iters available */
 	template <typename I>

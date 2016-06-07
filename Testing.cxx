@@ -14,8 +14,8 @@
 #include "StaticPrintf.hxx"
 
 // Check ADL range access
-static_assert( std::is_same<decltype(begin(Constainer::String())), Constainer::String::iterator>{} );
-static_assert( *Constainer::next(Constainer::begin(std::initializer_list<int>{1, 2, 3}), 1) == 2 );
+static_assert( STD::is_same<decltype(begin(Constainer::String())), Constainer::String::iterator>{} );
+static_assert( *Constainer::next(Constainer::begin(STD::initializer_list<int>{1, 2, 3}), 1) == 2 );
 
 using namespace Constainer;
 
@@ -139,16 +139,16 @@ constexpr auto i() {
 static_assert( i() == StableVector<int, 50>{5, 7, 7, 6} );
 
 constexpr auto j() {
-	StableFlatMap<int, char, 64, std::greater<>> map(ordered_unique_range, {{3, 'a'}, {2, 'b'}});
+	StableFlatMap<int, char, 64, STD::greater<>> map(ordered_unique_range, {{3, 'a'}, {2, 'b'}});
 	assert( map.insert_or_assign(5, 'd').second );
 	map[2] = 'e';
 	map.insert(ordered_unique_range, {{4, 'd'}, {3, 'w'}, {1,'c'}});
 	return map;
 }
-static_assert( j() == StableFlatMap<int, char, 10, std::greater<>>{{5, 'd'}, {4, 'd'}, {3, 'a'}, {2, 'e'}, {1, 'c'}} );
+static_assert( j() == StableFlatMap<int, char, 10, STD::greater<>>{{5, 'd'}, {4, 'd'}, {3, 'a'}, {2, 'e'}, {1, 'c'}} );
 
 constexpr auto k() {
-	StableFlatMultiMap<int, char, 64, std::greater<>> map(ordered_unique_range, {{3, 'c'}, {2, 'b'}});
+	StableFlatMultiMap<int, char, 64, STD::greater<>> map(ordered_unique_range, {{3, 'c'}, {2, 'b'}});
 
 	auto i = map.begin()+1, j = map.end();
 
@@ -158,7 +158,7 @@ constexpr auto k() {
 
 	return map;
 }
-static_assert( k() == StableFlatMultiMap<int, char, 10, std::greater<>>{{3, 'c'}, {3, 'd'}, {2, 'b'}, {2, 'c'}} );
+static_assert( k() == StableFlatMultiMap<int, char, 10, STD::greater<>>{{3, 'c'}, {3, 'd'}, {2, 'b'}, {2, 'c'}} );
 
 
 static_assert( strToInt<int>(" 6849.") == 6849 );
@@ -170,19 +170,19 @@ static_assert( strToInt<unsigned>(" +077", 0, 0) == 7+8*7 );
 static_assert( strToInt<unsigned>("11000", 0, 2) == 24 );
 
 static_assert( safeMul<double>(-0., 0) == 0 );
-static_assert( safeMul<double>(-std::numeric_limits<double>::infinity(),  0) == -std::numeric_limits<double>::infinity() );
-static_assert( safeMul<double>(-std::numeric_limits<double>::infinity(), -1) == std::numeric_limits<double>::infinity() );
+static_assert( safeMul<double>(-STD::numeric_limits<double>::infinity(),  0) == -STD::numeric_limits<double>::infinity() );
+static_assert( safeMul<double>(-STD::numeric_limits<double>::infinity(), -1) == STD::numeric_limits<double>::infinity() );
 
 /**< These should go well on most implementations. */
 static_assert( strToFloat<double>("+123.456789e0") == 123.456789 );
 static_assert( strToFloat<double>("+123.456789e0") == 123.456789 );
 static_assert( strToFloat<double>("-0x1.Bc70a3D70A3d7p+6") == -111.11 );
-static_assert( strToFloat<double     >("-1.18973e+4932") == -std::numeric_limits<double>::infinity() );
-static_assert( strToFloat<long double>("-1.18973e+4932") != -std::numeric_limits<long double>::infinity() );
+static_assert( strToFloat<double     >("-1.18973e+4932") == -STD::numeric_limits<double>::infinity() );
+static_assert( strToFloat<long double>("-1.18973e+4932") != -STD::numeric_limits<long double>::infinity() );
 static_assert( strToFloat<double>("-0x.8p-1") == -0.25 );
 
-static_assert( abs(std::numeric_limits<double>::infinity())  == std::numeric_limits<double>::infinity() );
-static_assert( abs(-std::numeric_limits<double>::infinity()) == std::numeric_limits<double>::infinity() );
+static_assert( abs(STD::numeric_limits<double>::infinity())  == STD::numeric_limits<double>::infinity() );
+static_assert( abs(-STD::numeric_limits<double>::infinity()) == STD::numeric_limits<double>::infinity() );
 
 // Taken from http://osxr.org/glibc/source/stdio-common/tst-printf.c#0373
 namespace TC001

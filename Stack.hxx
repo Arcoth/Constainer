@@ -20,7 +20,7 @@ struct Stack
 	Container c;
 
 	constexpr Stack(container_type const& c) : c(c) {}
-	constexpr Stack(container_type && c = {}) : c(std::move(c)) {}
+	constexpr Stack(container_type && c = {}) : c(STD::move(c)) {}
 
 	constexpr Stack(Stack const& s) = default;
 	constexpr Stack(Stack && s) = default;
@@ -35,10 +35,10 @@ struct Stack
 
 	template <typename... Args>
 	constexpr void emplace(Args&&... args) {
-		c.emplace_back(std::forward<Args>(args)...);
+		c.emplace_back(STD::forward<Args>(args)...);
 	}
 	constexpr void push(const_reference r) {c.push_back(r);}
-	constexpr void push(value_type&&    r) {c.push_back(std::move(r));}
+	constexpr void push(value_type&&    r) {c.push_back(STD::move(r));}
 
 	constexpr void pop() {c.pop_back();}
 

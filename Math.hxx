@@ -15,23 +15,23 @@ namespace Constainer {
 
 namespace detail {
 	template <typename T>
-	constexpr T signum(T x, std::false_type) {
+	CONSTAINER_PURE_CONST constexpr T signum(T x, STD::false_type) {
 		return T(0) < x;
 	}
 
 	template <typename T>
-	constexpr T signum(T x, std::true_type) {
+	CONSTAINER_PURE_CONST constexpr T signum(T x, STD::true_type) {
 		return (T(0) < x) - (x < T(0));
 	}
 }
 
 template <typename T>
 CONSTAINER_PURE_CONST constexpr T signum(T x) {
-	return detail::signum(x, std::is_signed<T>{});
+	return detail::signum(x, STD::is_signed<T>{});
 }
 
 template <typename T>
-CONSTAINER_PURE_CONST constexpr require<std::is_arithmetic<T>, T>
+CONSTAINER_PURE_CONST constexpr require<STD::is_arithmetic<T>, T>
 abs(T i) {
 	return i>T(0)? i : i<T(0)? -i : T(0);
 }
@@ -44,8 +44,8 @@ abs(T i) {
 template <typename Float>
 CONSTAINER_PURE_CONST constexpr Float safeMul( Float lhs, Float rhs ) {
 	const Float infties[] {
-		-std::numeric_limits<Float>::infinity(),
-		 std::numeric_limits<Float>::infinity()
+		-STD::numeric_limits<Float>::infinity(),
+		 STD::numeric_limits<Float>::infinity()
 	};
 	const auto infty = infties[1];
 
@@ -58,14 +58,14 @@ CONSTAINER_PURE_CONST constexpr Float safeMul( Float lhs, Float rhs ) {
 	if (abs(rhs) <= 1)
 		return lhs*rhs;
 
-	if (abs(rhs) > std::numeric_limits<Float>::max()/abs(lhs))
+	if (abs(rhs) > STD::numeric_limits<Float>::max()/abs(lhs))
 		return infties[signum(lhs)==signum(rhs)];
 
 	return lhs*rhs;
 }
 
 template <typename Float>
-CONSTAINER_PURE_CONST constexpr require<std::is_arithmetic<Float>, Float>
+CONSTAINER_PURE_CONST constexpr require<STD::is_arithmetic<Float>, Float>
 pow(Float f, int e) {
 	if (e==0)
 		return 1;
@@ -87,12 +87,12 @@ pow(Float f, int e) {
 }
 
 
-CONSTAINER_PURE_CONST constexpr unsigned popcount( std::uint64_t v ) {
+CONSTAINER_PURE_CONST constexpr unsigned popcount( STD::uint64_t v ) {
 	#if defined __clang__ || defined __GNUG__
 		return __builtin_popcountll(v);
 	#else
 		// From http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetTable
-		/*static*/ const std::uint8_t table[256] =
+		/*static*/ const STD::uint8_t table[256] =
 		{
 		#define B2(n) n,     n+1,     n+1,     n+2
 		#define B4(n) B2(n), B2(n+1), B2(n+1), B2(n+2)
@@ -114,7 +114,7 @@ CONSTAINER_PURE_CONST constexpr unsigned popcount( std::uint64_t v ) {
 	#endif
 }
 
-CONSTAINER_PURE_CONST constexpr unsigned count_trailing( std::uint64_t v ) {
+CONSTAINER_PURE_CONST constexpr unsigned count_trailing( STD::uint64_t v ) {
 	#if defined __clang__ || defined __GNUG__
 		return __builtin_ctzll(v);
 	#else
@@ -134,7 +134,7 @@ CONSTAINER_PURE_CONST constexpr unsigned count_trailing( std::uint64_t v ) {
 
 /**< Obtains the fractional part of r by subtracting powers of two. */
 template <typename Real>
-constexpr Real fractional (Real r)
+CONSTAINER_PURE_CONST constexpr Real fractional (Real r)
 {
 	Real x = signum(r);
 	while (x < r/2)
@@ -150,11 +150,11 @@ constexpr Real fractional (Real r)
 
 /**< Obtains r%u. */
 template <typename Real>
-constexpr Real remainder (Real r, std::uintmax_t u)
+CONSTAINER_PURE_CONST constexpr Real remainder (Real r, STD::uintmax_t u)
 {
 	assert (u != 0);
 	if (UINTMAX_MAX >= r/u)
-		return r-std::uintmax_t (r/u) *u;
+		return r-STD::uintmax_t (r/u) *u;
 
 	Stack<Real> upows ({1});
 	for (Real x=1, xu = x*u; r >= xu;)
@@ -167,27 +167,27 @@ constexpr Real remainder (Real r, std::uintmax_t u)
 	{
 		auto value = upows.pop_return();
 		if (r >= value)
-			r -= std::uintmax_t (r/value) *value;
+			r -= STD::uintmax_t (r/value) *value;
 	}
 	while (UINTMAX_MAX* (Real) u <= r);
-	return r-std::uintmax_t (r/u) *u;
+	return r-STD::uintmax_t (r/u) *u;
 }
 
 template <typename Real>
-constexpr std::uintmax_t rounded_remainder (Real r, std::uintmax_t u) {
+CONSTAINER_PURE_CONST constexpr STD::uintmax_t rounded_remainder (Real r, STD::uintmax_t u) {
 	return remainder (r, u) + 0.5;
 }
 
 // Doesn't correctly determine negative zeroes yet.
 template <typename T>
-constexpr bool is_negative ( T t ) {
-	return t < 0 /*|| 1/t == -std::numeric_limits<T>::infinity()*/;
+CONSTAINER_PURE_CONST constexpr bool is_negative ( T t ) {
+	return t < 0 /*|| 1/t == -STD::numeric_limits<T>::infinity()*/;
 }
 
 /**< Inefficient implementation; However, constexpr forbids e.g. aliasing through char,
      so using properties of IEEE 754 is impossible. */
 template <typename Real>
-constexpr std::pair<Real, int> normalize (int base, Real r)
+CONSTAINER_PURE_CONST constexpr STD::pair<Real, int> normalize (int base, Real r)
 {
 	int exp_sum = 0;
 	int exp = 1;
@@ -244,11 +244,11 @@ constexpr std::pair<Real, int> normalize (int base, Real r)
 template <typename T>
 constexpr T ln10 = 2.3025850929940456840179914546843L;
 template <typename Real>
-constexpr Real pow10(Real x) {
+CONSTAINER_PURE_CONST constexpr Real pow10(Real x) {
 	Real sum=1, fact=1;
 	auto y = x * ln10<Real>;
 	x = y;
-	for (int i=2; i < std::numeric_limits<Real>::max_digits10+5; ++i) {
+	for (int i=2; i < STD::numeric_limits<Real>::max_digits10+5; ++i) {
 		sum += fact*x;
 		x *= y;
 		fact /= i;

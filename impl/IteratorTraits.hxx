@@ -16,32 +16,32 @@ namespace Constainer {
 
 	namespace detail {
 		template <typename, typename, typename=void>
-		struct hasIterCategoryConvTo : std::false_type {};
+		struct hasIterCategoryConvTo : STD::false_type {};
 		template <typename I, typename C>
 		struct hasIterCategoryConvTo<I, C,
-			require<std::is_convertible<
-				typename std::iterator_traits<I>::iterator_category, C
+			require<STD::is_convertible<
+				typename STD::iterator_traits<I>::iterator_category, C
 			>>>
-			: std::true_type {};
+			: STD::true_type {};
 	}
 
 	template <typename I>
-	using         isInputIterator = detail::hasIterCategoryConvTo<I, std::        input_iterator_tag>;
+	using         isInputIterator = detail::hasIterCategoryConvTo<I, STD::        input_iterator_tag>;
 	template <typename I>
-	using       isForwardIterator = detail::hasIterCategoryConvTo<I, std::      forward_iterator_tag>;
+	using       isForwardIterator = detail::hasIterCategoryConvTo<I, STD::      forward_iterator_tag>;
 	template <typename I>
-	using        isOutputIterator = detail::hasIterCategoryConvTo<I, std::       output_iterator_tag>;
+	using        isOutputIterator = detail::hasIterCategoryConvTo<I, STD::       output_iterator_tag>;
 	template <typename I>
-	using  isRandomAccessIterator = detail::hasIterCategoryConvTo<I, std::random_access_iterator_tag>;
+	using  isRandomAccessIterator = detail::hasIterCategoryConvTo<I, STD::random_access_iterator_tag>;
 	template <typename I>
-	using isBidirectionalIterator = detail::hasIterCategoryConvTo<I, std::bidirectional_iterator_tag>;
+	using isBidirectionalIterator = detail::hasIterCategoryConvTo<I, STD::bidirectional_iterator_tag>;
 
 	template <typename I, typename T>
-	using hasValueType = std::is_same<typename std::iterator_traits<I>::value_type, T>;
+	using hasValueType = STD::is_same<typename STD::iterator_traits<I>::value_type, T>;
 
 	template <typename I>
-	using iteratorCategory = typename std::iterator_traits<I>::iterator_category;
+	using iteratorCategory = typename STD::iterator_traits<I>::iterator_category;
 
 	/*template <typename I>
-	using isContiguousIterator = detail::hasIterCategoryConvTo<I, std::contiguous_iterator_tag>;*/
+	using isContiguousIterator = detail::hasIterCategoryConvTo<I, STD::contiguous_iterator_tag>;*/
 }

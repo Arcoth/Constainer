@@ -16,7 +16,7 @@ namespace Constainer {
 template <typename Char>
 struct CharTraits {
 private:
-	using _char_traits = std::char_traits<Char>;
+	using _char_traits = STD::char_traits<Char>;
 
 public:
 	using char_type = Char;
@@ -29,8 +29,8 @@ public:
 
 	static constexpr bool eq_int_type(int_type const& lhs, int_type const& rhs) { return lhs == rhs; }
 
-	static constexpr int compare(char_type const* s1, char_type const* s2, std::size_t n) {
-		for (std::size_t i = 0; i < n; ++i)
+	static constexpr int compare(char_type const* s1, char_type const* s2, STD::size_t n) {
+		for (STD::size_t i = 0; i < n; ++i)
 			     if (lt(s1[i], s2[i]))
 				return -1;
 			else if (lt(s2[i], s1[i]))
@@ -39,35 +39,35 @@ public:
 		return 0;
 	}
 
-	static constexpr std::size_t length(char_type const* p) {
-		std::size_t i = 0;
+	static constexpr STD::size_t length(char_type const* p) {
+		STD::size_t i = 0;
 		while (!eq(*p++, char_type()))
 			++i;
 
 		return i;
 	}
 
-	static constexpr char_type const* find(char_type const* s, std::size_t n, char_type const& a) {
+	static constexpr char_type const* find(char_type const* s, STD::size_t n, char_type const& a) {
 		for (; n--; ++s)
 			if (eq(*s, a))
 				return s;
 		return nullptr;
 	}
 
-	static constexpr char_type* copy(char_type* s1, char_type const* s2, std::size_t n) {
+	static constexpr char_type* copy(char_type* s1, char_type const* s2, STD::size_t n) {
 		return Constainer::copy_n(s2, n, s1);
 	}
 
-	static constexpr char_type* move(char_type* s1, char_type const* s2, std::size_t n) {
+	static constexpr char_type* move(char_type* s1, char_type const* s2, STD::size_t n) {
 		return Constainer::move_n(s2, n, s1);
 	}
 
-	static constexpr char_type* assign(char_type* s, std::size_t n, char_type a) {
+	static constexpr char_type* assign(char_type* s, STD::size_t n, char_type a) {
 		return Constainer::fill_n(s, n, a);
 	}
 
-	static constexpr char_type to_char_type( int_type i ) {return std::char_traits<char_type>::to_char_type(i);}
-	static constexpr char_type to_int_type( char_type c ) {return std::char_traits<char_type>::to_int_type(c);}
+	static constexpr char_type to_char_type( int_type i ) {return STD::char_traits<char_type>::to_char_type(i);}
+	static constexpr char_type to_int_type( char_type c ) {return STD::char_traits<char_type>::to_int_type(c);}
 
 	static constexpr int_type eof() { return _char_traits::eof(); }
 	static constexpr int_type not_eof(int_type c) { return _char_traits::not_eof(c); }
@@ -75,7 +75,7 @@ public:
 	static constexpr void assign( char_type& a, const char_type& b ) {a=b;}
 
 	/**< Called after erase has performed on elements in the container. */
-	static constexpr void destroy(char_type* p, std::size_t n) {
+	static constexpr void destroy(char_type* p, STD::size_t n) {
 		if (n != 0)
 			p[0] = char_type();
 	}
@@ -103,7 +103,7 @@ CONSTAINER_PURE_CONST constexpr int toupper(int i) {
 }
 
 
-template <typename Char, std::size_t MaxN, typename Traits=CharTraits<Char>>
+template <typename Char, STD::size_t MaxN, typename Traits=CharTraits<Char>>
 class BasicString : protected detail::BasicVector<Char, MaxN, Traits, 1> {
 
 	using _base = detail::BasicVector<Char, MaxN, Traits, 1>;
@@ -165,7 +165,7 @@ public:
 
 	template <size_type OtherN>
 	constexpr BasicString(ThisResized<OtherN> const& str, size_type pos=0, size_type count=npos) :
-		BasicString(str.data()+pos, std::min(str.size()-pos, count)) {}
+		BasicString(str.data()+pos, STD::min(str.size()-pos, count)) {}
 
 	constexpr BasicString(const_pointer str, size_type s) {
 		append(str, s);
@@ -178,7 +178,7 @@ public:
 	constexpr BasicString(BasicString const&) = default;
 
 	constexpr BasicString() = default;
-	constexpr BasicString(std::initializer_list<value_type> ilist) :
+	constexpr BasicString(STD::initializer_list<value_type> ilist) :
 		_base(ilist) {}
 	template <typename InputIt>
 	constexpr BasicString(InputIt first, InputIt last) : _base(first, last) {}
@@ -187,7 +187,7 @@ public:
 	constexpr BasicString& operator=(BasicString&&) = default;
 	constexpr BasicString& operator=(const_pointer p) {return assign(p);}
 	constexpr BasicString& operator=(value_type c) {_base::assign(1, c); return *this;} // Prevent postponed lookup into base class
-	constexpr BasicString& operator=(std::initializer_list<value_type> ilist) {
+	constexpr BasicString& operator=(STD::initializer_list<value_type> ilist) {
 		return assign(ilist);
 	}
 
@@ -201,7 +201,7 @@ public:
 	constexpr BasicString& assign( const_pointer str ) {
 		return assign(str, traits_type::length(str));
 	}
-	constexpr BasicString& assign( std::initializer_list<value_type> ilist ) {
+	constexpr BasicString& assign( STD::initializer_list<value_type> ilist ) {
 		_base::assign(ilist);
 		return *this;
 	}
@@ -215,10 +215,10 @@ public:
 		_base::assign(first, last);
 		return *this;
 	}
-	template <std::size_t N>
+	template <STD::size_t N>
 	constexpr BasicString& assign( ThisResized<N> const& other,
 	                               size_type pos, size_type count = npos ) {
-		return assign(other.data()+pos, std::min(count, size()-pos));
+		return assign(other.data()+pos, STD::min(count, size()-pos));
 	}
 	/**< --------- @INSERT ---------*/
 
@@ -239,13 +239,13 @@ public:
 		return *this;
 	}
 
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicString& insert(size_type index, ThisResized<OtherN> const& str,
                                     size_type str_index, size_type count = npos) {
-		AssertExcept<std::out_of_range>(str_index <= str.length());
-		return insert(index, str.data()+str_index, std::min(count, str.size()-str_index));
+		AssertExcept<STD::out_of_range>(str_index <= str.length());
+		return insert(index, str.data()+str_index, STD::min(count, str.size()-str_index));
 	}
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicString& insert(size_type index, ThisResized<OtherN> const& str) {
 		return insert(index, str, 0);
 	}
@@ -257,7 +257,7 @@ public:
 		return *this;
 	}
 
-	constexpr BasicString& insert( const_iterator i, std::initializer_list<value_type> ilist ) {
+	constexpr BasicString& insert( const_iterator i, STD::initializer_list<value_type> ilist ) {
 		_base::insert(i, ilist);
 		return *this;
 	}
@@ -272,14 +272,14 @@ public:
 		return this->insert( this->size(), str, len );
 	}
 
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicString& append( ThisResized<OtherN> const& str,
 	                               size_type pos, size_type len=npos ) {
-		AssertExcept<std::out_of_range>(pos <= str.size(), "Invalid position!");
-		len = std::min(len, str.size()-pos);
+		AssertExcept<STD::out_of_range>(pos <= str.size(), "Invalid position!");
+		len = STD::min(len, str.size()-pos);
 		return this->insert( this->size(), str.data()+pos, len );
 	}
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicString& append( ThisResized<OtherN> const& str ) {
 		return append( str, 0 );
 	}
@@ -291,24 +291,24 @@ public:
 	append( InputIt first, InputIt last ) {
 		return this->insert(this->end(), first, last);
 	}
-	constexpr BasicString& append( std::initializer_list<value_type> ilist ) {
-		return append(std::begin(ilist), std::end(ilist));
+	constexpr BasicString& append( STD::initializer_list<value_type> ilist ) {
+		return append(STD::begin(ilist), STD::end(ilist));
 	}
 
 	/**< --------- @OPERATOR+= ---------*/
 
 	constexpr BasicString& operator+=( Char ch )                {return append(1, ch);}
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicString& operator+=( ThisResized<OtherN> const& str ) {return append(str);}
 	constexpr BasicString& operator+=( const_pointer str )      {return append(str);}
-	constexpr BasicString& operator+=( std::initializer_list<value_type> ilist )
+	constexpr BasicString& operator+=( STD::initializer_list<value_type> ilist )
 	{return append(ilist);}
 
 	/**< --------- @COMPARE ---------*/
 
 	constexpr int compare( size_type pos, size_type count1,
 	                       const_pointer s, size_type count2 ) const {
-		size_type len = std::min(count1, count2);
+		size_type len = STD::min(count1, count2);
 		auto comp = traits_type::compare(data()+pos, s, len);
 
 		if (comp != 0)
@@ -328,25 +328,25 @@ public:
 		return compare(0, this->size(), s);
 	}
 
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr int compare( size_type pos1, size_type count1,
 	                       ThisResized<OtherN> const& other,
 	                       size_type pos2, size_type count2=npos ) const {
-		count2 = std::min(other.size()-pos1, count2);
+		count2 = STD::min(other.size()-pos1, count2);
 		return compare(pos1, count1, other.data()+pos2, count2);
 	}
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr int compare( size_type pos1, size_type count1,
 	                       ThisResized<OtherN> const& str ) const {
 		return compare(pos1, count1, str, 0);
 	}
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr int compare( ThisResized<OtherN> const& str ) const {
 		return compare(0, this->size(), str);
 	}
 
 	constexpr BasicString& erase( size_type index = 0, size_type count = npos ) {
-		_base::erase( begin()+index, begin()+index + std::min(count, size() - index) );
+		_base::erase( begin()+index, begin()+index + STD::min(count, size() - index) );
 		return *this;
 	}
 
@@ -358,7 +358,7 @@ public:
 			insert(pos+count, str+count, count2-count);
 		else if (count2 < count)
 			erase(pos+count2, count-count2);
-		traits_type::copy(_base::data()+pos, str, std::min(count, count2));
+		traits_type::copy(_base::data()+pos, str, STD::min(count, count2));
 		return *this;
 	}
 	constexpr BasicString& replace( size_type pos, size_type count,
@@ -374,21 +374,21 @@ public:
 		return replace(first, last, p, traits_type::length(p));
 	}
 
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicString& replace(size_type pos, size_type count,
 	                               ThisResized<OtherN> const& str,
 	                               size_type pos2, size_type count2 = npos) {
-		AssertExcept<std::out_of_range>(pos <= length() && pos2 <= str.length());
-		return replace(pos, count, str.data()+pos2, std::min(count2, str.size()-pos2));
+		AssertExcept<STD::out_of_range>(pos <= length() && pos2 <= str.length());
+		return replace(pos, count, str.data()+pos2, STD::min(count2, str.size()-pos2));
 	}
 
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicString& replace(size_type pos, size_type count,
                                      ThisResized<OtherN> const& str) {
 		return replace(pos, count, str, 0);
 	}
 
-	template <std::size_t OtherN>
+	template <STD::size_t OtherN>
 	constexpr BasicString& replace(const_iterator first, const_iterator last,
                                      ThisResized<OtherN> const& str) {
 		return replace(first, last, str.data(), str.size());
@@ -400,7 +400,7 @@ private:
 	template <typename ForwardIt>
 	constexpr void
 	replace(const_iterator first, const_iterator last, ForwardIt first2, ForwardIt last2,
-	        std::forward_iterator_tag) {
+	        STD::forward_iterator_tag) {
 		auto count = last-first;
 		auto count2 = Constainer::distance(first2, last2);
 
@@ -409,14 +409,14 @@ private:
 		else if (count2 < count)
 			erase(first+count2, last);
 
-		Constainer::copy(first2, first2+std::min(count, count2),
+		Constainer::copy(first2, first2+STD::min(count, count2),
 		                 _remcv(first));
 	}
 
 	template <typename InputIt>
 	constexpr void
 	replace(const_iterator first, const_iterator last, InputIt first2, InputIt last2,
-	        std::input_iterator_tag) {
+	        STD::input_iterator_tag) {
 		erase(first, last);
 		insert(first, first2, last2);
 	}
@@ -430,13 +430,13 @@ public:
 		// To ensure the strong exception guarantee.
 		copy.replace(copy.begin()+(first-begin()),
 		             copy.begin()+(last-begin()),
-		             first2, last2, typename std::iterator_traits<InputIt>::iterator_category{});
+		             first2, last2, typename STD::iterator_traits<InputIt>::iterator_category{});
 		return *this = copy;
 	}
 
 	constexpr BasicString& replace( const_iterator first, const_iterator last,
-	                                std::initializer_list<value_type> ilist ) {
-		return replace(first, last, std::begin(ilist), std::end(ilist));
+	                                STD::initializer_list<value_type> ilist ) {
+		return replace(first, last, STD::begin(ilist), STD::end(ilist));
 	}
 
 	constexpr BasicString& replace( const_iterator first, const_iterator last,
@@ -451,13 +451,13 @@ public:
 	}
 
 	constexpr BasicString substr(size_type pos, size_type count=npos) const {
-		AssertExcept<std::out_of_range>(pos <= size(), "Invalid start position of substr");
-		return BasicString(data()+pos, std::min(count, size()-pos));
+		AssertExcept<STD::out_of_range>(pos <= size(), "Invalid start position of substr");
+		return BasicString(data()+pos, STD::min(count, size()-pos));
 	}
 
 	constexpr size_type copy( pointer dest, size_type count, size_type pos = 0) const {
-		AssertExcept<std::out_of_range>(pos < size(), "Invalid start position of copy");
-		return traits_type::copy(dest, data()+pos, std::min(count, size()-pos)) - dest;
+		AssertExcept<STD::out_of_range>(pos < size(), "Invalid start position of copy");
+		return traits_type::copy(dest, data()+pos, STD::min(count, size()-pos)) - dest;
 	}
 
 	void resize(size_type n) {_base::resize(n);}
@@ -465,7 +465,7 @@ public:
 
 	void push_back(value_type c) {_base::push_back(c);}
 
-	template <std::size_t OtherMax, typename OtherTraits>
+	template <STD::size_t OtherMax, typename OtherTraits>
 	constexpr void swap( BasicString<value_type, OtherMax, OtherTraits>& other ) {
 		_base::swap(other);
 	}
@@ -492,7 +492,7 @@ public:
 
 		return npos;
 	}
-	template <std::size_t OtherMax>
+	template <STD::size_t OtherMax>
 	constexpr size_type find(ThisResized<OtherMax> const& other, size_type pos = 0) const {
 		return find(other.data(), pos, other.size());
 	}
@@ -501,9 +501,9 @@ public:
 
 	constexpr size_type rfind(const_pointer str, size_type pos, size_type count) const {
 		if (count == 0)
-			return std::min(size(), pos);
+			return STD::min(size(), pos);
 		if (!empty()) {
-			pos = std::min(pos, size()-1);
+			pos = STD::min(pos, size()-1);
 			auto it = Constainer::search(rbegin()+(size()-pos-1), rend(),
 			                             Constainer::make_reverse_iterator(str+count),
 			                             Constainer::make_reverse_iterator(str),
@@ -519,7 +519,7 @@ public:
 	constexpr size_type rfind(value_type ch, size_type pos=npos) const {
 		return rfind(&ch, pos, 1);
 	}
-	template <std::size_t OtherMax>
+	template <STD::size_t OtherMax>
 	constexpr size_type rfind(ThisResized<OtherMax> const& other, size_type pos = npos) const {
 		return rfind(other.data(), pos, other.size());
 	}
@@ -538,7 +538,7 @@ public:
 	constexpr size_type find_first_of(value_type ch, size_type pos=0) const {
 		return find(ch, pos);
 	}
-	template <std::size_t OtherMax>
+	template <STD::size_t OtherMax>
 	constexpr size_type find_first_of(ThisResized<OtherMax> const& other, size_type pos = 0) const {
 		return find_first_of(other.data(), pos, other.size());
 	}
@@ -555,10 +555,10 @@ public:
 		return find_first_not_of(str, pos, traits_type::length(str));
 	}
 	constexpr size_type find_first_not_of(value_type ch, size_type pos=0) const {
-		//! TODO: Implement std::not1 and implement using find_if with not1(traits::eq)
+		//! TODO: Implement STD::not1 and implement using find_if with not1(traits::eq)
 		return find_first_not_of(&ch, pos, 1);
 	}
-	template <std::size_t OtherMax>
+	template <STD::size_t OtherMax>
 	constexpr size_type find_first_not_of(ThisResized<OtherMax> const& other, size_type pos = 0) const {
 		return find_first_not_of(other.data(), pos, other.size());
 	}
@@ -566,7 +566,7 @@ public:
 	/**< --------- @FIND_LAST_OF ---------*/
 
 	constexpr size_type find_last_of(const_pointer str, size_type pos, size_type count) const {
-		pos = std::min(pos, size()-1);
+		pos = STD::min(pos, size()-1);
 		auto it = Constainer::find_first_of(rbegin()+(size()-pos-1), rend(), str, str+count, traits_type::eq);
 		if (it.base() == begin())
 			return npos;
@@ -578,7 +578,7 @@ public:
 	constexpr size_type find_last_of(value_type ch, size_type pos=npos) const {
 		return rfind(ch, pos);
 	}
-	template <std::size_t OtherMax>
+	template <STD::size_t OtherMax>
 	constexpr size_type find_last_of(ThisResized<OtherMax> const& other, size_type pos = npos) const {
 		return find_last_of(other.data(), pos, other.size());
 	}
@@ -586,7 +586,7 @@ public:
 	/**< --------- @FIND_LAST_NOT_OF ---------*/
 
 	constexpr size_type find_last_not_of(const_pointer str, size_type pos, size_type count) const {
-		pos = std::min(pos, size()-1);
+		pos = STD::min(pos, size()-1);
 		auto it = Constainer::find_first_not_of(rbegin()+(size()-pos-1), rend(), str, str+count, traits_type::eq);
 		if (it.base() == begin())
 			return npos;
@@ -598,13 +598,13 @@ public:
 	constexpr size_type find_last_not_of(value_type ch, size_type pos=npos) const {
 		return find_last_not_of(&ch, pos, 1);
 	}
-	template <std::size_t OtherMax>
+	template <STD::size_t OtherMax>
 	constexpr size_type find_last_not_of(ThisResized<OtherMax> const& other, size_type pos = npos) const {
 		return find_last_of(other.data(), pos, other.size());
 	}
 };
 
-template <typename Char, std::size_t N1, std::size_t N2, typename Traits1, typename Traits2>
+template <typename Char, STD::size_t N1, STD::size_t N2, typename Traits1, typename Traits2>
 constexpr void swap( BasicString<Char, N1, Traits1>& lhs, BasicString<Char, N2, Traits2>& rhs ) {
 	lhs.swap(rhs);
 }
@@ -616,8 +616,8 @@ using String1024 = BasicString<char, 1024>;
 
 using String = String256;
 
-constexpr String256 operator"" _cstr ( char const* str, std::size_t len ) {return {str, len};}
-constexpr String512 operator"" _lcstr( char const* str, std::size_t len ) {return {str, len};}
+constexpr String256 operator"" _cstr ( char const* str, STD::size_t len ) {return {str, len};}
+constexpr String512 operator"" _lcstr( char const* str, STD::size_t len ) {return {str, len};}
 
 }
 
@@ -628,33 +628,33 @@ constexpr String512 operator"" _lcstr( char const* str, std::size_t len ) {retur
 namespace Constainer {
 namespace detail {
 	template <typename Char, typename Traits>
-	void writeTo(std::basic_ostream<Char, Traits>& os,
-	             Char const* s, std::streamsize n) {
+	void writeTo(STD::basic_ostream<Char, Traits>& os,
+	             Char const* s, STD::streamsize n) {
 		if (os.rdbuf()->sputn(s, n) != n)
-			os.setstate(std::ios_base::badbit);
+			os.setstate(STD::ios_base::badbit);
 	}
 
 	template <typename Char, typename Traits>
-	void fill(std::basic_ostream<Char, Traits>& os, std::streamsize n) {
+	void fill(STD::basic_ostream<Char, Traits>& os, STD::streamsize n) {
 		auto c = os.fill();
 		while (n-- > 0)
 			if (Traits::eq_int_type(os.rdbuf()->sputc(c), Traits::eof())) {
-				os.setstate(std::ios_base::badbit);
+				os.setstate(STD::ios_base::badbit);
 				break;
 			}
 	}
 }
 
-template <typename Char, std::size_t N, typename Traits, typename OTraits>
-std::basic_ostream<Char, OTraits>& operator<<( std::basic_ostream<Char, OTraits>& os,
+template <typename Char, STD::size_t N, typename Traits, typename OTraits>
+STD::basic_ostream<Char, OTraits>& operator<<( STD::basic_ostream<Char, OTraits>& os,
                                                BasicString<Char, N, Traits> const& str )
 {
-	if (typename std::basic_ostream<Char, OTraits>::sentry sentry{os})
+	if (typename STD::basic_ostream<Char, OTraits>::sentry sentry{os})
 		try {
 			auto n = str.size();
-			std::size_t w = os.width();
+			STD::size_t w = os.width();
 			if (n < w) {
-				bool left_aligned = (os.flags() & std::ios_base::adjustfield) == std::ios_base::left;
+				bool left_aligned = (os.flags() & STD::ios_base::adjustfield) == STD::ios_base::left;
 				if (!left_aligned)
 					detail::fill(os, w - n);
 				if (os.good()) {
@@ -669,35 +669,35 @@ std::basic_ostream<Char, OTraits>& operator<<( std::basic_ostream<Char, OTraits>
 			os.width(0);
 		}
 		catch(...) {
-			os.setstate(std::ios_base::badbit);
+			os.setstate(STD::ios_base::badbit);
 		}
 
 	return os;
 }
 
-template <typename Char, std::size_t N1, std::size_t N2, typename Traits>
+template <typename Char, STD::size_t N1, STD::size_t N2, typename Traits>
 constexpr auto operator+(BasicString<Char, N1, Traits> const& lhs,
                          BasicString<Char, N2, Traits> const& rhs) {
-	BasicString<Char, std::max(N1, N2), Traits> result = lhs;
+	BasicString<Char, STD::max(N1, N2), Traits> result = lhs;
 	return result += rhs;
 }
 
-template <typename Char, std::size_t N, typename Traits>
+template <typename Char, STD::size_t N, typename Traits>
 constexpr auto operator+(Char const* lhs, BasicString<Char, N, Traits> const& rhs) {
 	BasicString<Char, N, Traits> result = rhs;
 	return result.insert(0, lhs);
 }
-template <typename Char, std::size_t N, typename Traits>
+template <typename Char, STD::size_t N, typename Traits>
 constexpr auto operator+(BasicString<Char, N, Traits> const& lhs, Char const* rhs) {
 	auto result = lhs;
 	return result += rhs;
 }
-template <typename Char, std::size_t N, typename Traits>
+template <typename Char, STD::size_t N, typename Traits>
 constexpr auto operator+(BasicString<Char, N, Traits> const& lhs, Char rhs) {
 	auto result = lhs;
 	return result += rhs;
 }
-template <typename Char, std::size_t N, typename Traits>
+template <typename Char, STD::size_t N, typename Traits>
 constexpr auto operator+(Char lhs, BasicString<Char, N, Traits> const& rhs) {
 	auto result = rhs;
 	return result.insert(0, lhs);
@@ -707,32 +707,32 @@ constexpr auto operator+(Char lhs, BasicString<Char, N, Traits> const& rhs) {
 
 /**< A load of relational operators follows. */
 
-template <typename CharT, std::size_t N1, std::size_t N2, typename Traits>
+template <typename CharT, STD::size_t N1, STD::size_t N2, typename Traits>
 constexpr bool operator==( BasicString<CharT,N1,Traits> const& lhs,
                            BasicString<CharT,N2,Traits> const& rhs ) {
 	return lhs.compare(rhs) == 0;
 }
-template <typename CharT, std::size_t N1, std::size_t N2, typename Traits>
+template <typename CharT, STD::size_t N1, STD::size_t N2, typename Traits>
 constexpr bool operator!=( BasicString<CharT,N1,Traits> const& lhs,
                            BasicString<CharT,N2,Traits> const& rhs ) {
 	return !(lhs == rhs);
 }
-template <typename CharT, std::size_t N1, std::size_t N2, typename Traits>
+template <typename CharT, STD::size_t N1, STD::size_t N2, typename Traits>
 constexpr bool operator <( BasicString<CharT,N1,Traits> const& lhs,
                            BasicString<CharT,N2,Traits> const& rhs ) {
 	return lhs.compare(rhs) < 0;
 }
-template <typename CharT, std::size_t N1, std::size_t N2, typename Traits>
+template <typename CharT, STD::size_t N1, STD::size_t N2, typename Traits>
 constexpr bool operator<=( BasicString<CharT,N1,Traits> const& lhs,
                            BasicString<CharT,N2,Traits> const& rhs ) {
 	return !(lhs > rhs);
 }
-template <typename CharT, std::size_t N1, std::size_t N2, typename Traits>
+template <typename CharT, STD::size_t N1, STD::size_t N2, typename Traits>
 constexpr bool operator >( BasicString<CharT,N1,Traits> const& lhs,
                            BasicString<CharT,N2,Traits> const& rhs ) {
 	return rhs < lhs;
 }
-template <typename CharT, std::size_t N1, std::size_t N2, typename Traits>
+template <typename CharT, STD::size_t N1, STD::size_t N2, typename Traits>
 constexpr bool operator>=( BasicString<CharT,N1,Traits> const& lhs,
                            BasicString<CharT,N2,Traits> const& rhs ) {
 	return rhs <= lhs;
@@ -740,56 +740,56 @@ constexpr bool operator>=( BasicString<CharT,N1,Traits> const& lhs,
 
 /**< char-ptr <=> BasicString relations */
 
-template <typename CharT, std::size_t N, typename Traits>
+template <typename CharT, STD::size_t N, typename Traits>
 constexpr bool operator==( const CharT* lhs, const BasicString<CharT,N,Traits>& rhs ) {
 	return rhs.compare(lhs) == 0;
 }
-template <typename CharT, std::size_t N, typename Traits>
+template <typename CharT, STD::size_t N, typename Traits>
 constexpr bool operator==( const BasicString<CharT,N,Traits>& lhs, const CharT* rhs ) {
 	return rhs == lhs;
 }
 
-template <typename CharT, std::size_t N, typename Traits>
+template <typename CharT, STD::size_t N, typename Traits>
 constexpr bool operator!=( const CharT* lhs, const BasicString<CharT,N,Traits>& rhs ) {
 	return !(lhs == rhs);
 }
-template <typename CharT, std::size_t N, typename Traits>
+template <typename CharT, STD::size_t N, typename Traits>
 constexpr bool operator!=( const BasicString<CharT,N,Traits>& lhs, const CharT* rhs ) {
 	return rhs != lhs;
 }
 
-template <typename CharT, std::size_t N, typename Traits>
+template <typename CharT, STD::size_t N, typename Traits>
 constexpr bool operator <( const CharT* lhs, const BasicString<CharT,N,Traits>& rhs ) {
 	return rhs.compare(lhs) > 0;
 }
-template <typename CharT, std::size_t N, typename Traits>
+template <typename CharT, STD::size_t N, typename Traits>
 constexpr bool operator <( const BasicString<CharT,N,Traits>& lhs, const CharT* rhs ) {
 	return rhs > lhs;
 }
 
-template <typename CharT, std::size_t N, typename Traits>
+template <typename CharT, STD::size_t N, typename Traits>
 constexpr bool operator<=( const CharT* lhs, const BasicString<CharT,N,Traits>& rhs ) {
 	return !(lhs > rhs);
 }
-template <typename CharT, std::size_t N, typename Traits>
+template <typename CharT, STD::size_t N, typename Traits>
 constexpr bool operator<=( const BasicString<CharT,N,Traits>& lhs, const CharT* rhs ) {
 	return !(lhs > rhs);
 }
 
-template <typename CharT, std::size_t N, typename Traits>
+template <typename CharT, STD::size_t N, typename Traits>
 constexpr bool operator >( const CharT* lhs, const BasicString<CharT,N,Traits>& rhs ) {
 	return !(lhs <= rhs);
 }
-template <typename CharT, std::size_t N, typename Traits>
+template <typename CharT, STD::size_t N, typename Traits>
 constexpr bool operator >( const BasicString<CharT,N,Traits>& lhs, const CharT* rhs ) {
 	return !(lhs <= rhs);
 }
 
-template <typename CharT, std::size_t N, typename Traits>
+template <typename CharT, STD::size_t N, typename Traits>
 constexpr bool operator>=( const CharT* lhs, const BasicString<CharT,N,Traits>& rhs ) {
 	return !(lhs < rhs);
 }
-template <typename CharT, std::size_t N, typename Traits>
+template <typename CharT, STD::size_t N, typename Traits>
 constexpr bool operator>=( const BasicString<CharT,N,Traits>& lhs, const CharT* rhs ) {
 	return !(lhs < rhs);
 }
@@ -803,18 +803,18 @@ constexpr bool operator>=( const BasicString<CharT,N,Traits>& lhs, const CharT* 
  *
  */
 
-constexpr std::size_t hash(const char* str, std::size_t len) {
-	const std::size_t prime = sizeof(std::size_t) == 8? 0x00000100000001b3 : 0x1000193;
-	      std::size_t h     = sizeof(std::size_t) == 8? 0xcbf29ce484222325 : 0x811C9DC5;
+constexpr STD::size_t hash(const char* str, STD::size_t len) {
+	const STD::size_t prime = sizeof(STD::size_t) == 8? 0x00000100000001b3 : 0x1000193;
+	      STD::size_t h     = sizeof(STD::size_t) == 8? 0xcbf29ce484222325 : 0x811C9DC5;
 	while (len--)
 		h = (h ^ *str++) * prime;
 	return h;
 }
-constexpr std::size_t hash(const char* str) {
+constexpr STD::size_t hash(const char* str) {
 	return hash(str, CharTraits<char>::length(str));
 }
-template <std::size_t N, typename Traits>
-constexpr std::size_t hash(BasicString<char, N, Traits> const& str) {
+template <STD::size_t N, typename Traits>
+constexpr STD::size_t hash(BasicString<char, N, Traits> const& str) {
 	return hash(str.c_str(), str.size());
 }
 
