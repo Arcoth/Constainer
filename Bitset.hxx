@@ -10,22 +10,22 @@
 
 namespace Constainer {
 
-template <std::size_t N=defaultContainerSize>
+template <STD::size_t N=defaultContainerSize>
 class Bitset {
 	// TODO: Support zero-sized bitsets?
 
-	using size_type = std::size_t;
+	using size_type = STD::size_t;
 
 	static constexpr auto _bits_per_chunk = 64;
-	Array<std::uint64_t, (N+_bits_per_chunk-1)/_bits_per_chunk> _storage;
+	Array<STD::uint64_t, (N+_bits_per_chunk-1)/_bits_per_chunk> _storage;
 
 	constexpr decltype(auto) _chunkof(size_type i)       {return _storage[i/_bits_per_chunk];}
 	constexpr decltype(auto) _chunkof(size_type i) const {return _storage[i/_bits_per_chunk];}
 
-	CONSTAINER_PURE_CONST static constexpr std::uint64_t _mask_chunkof(size_type i) {
+	CONSTAINER_PURE_CONST static constexpr STD::uint64_t _mask_chunkof(size_type i) {
 		return 1ull << i%_bits_per_chunk;
 	}
-	static constexpr std::uint64_t _full_mask = -1;
+	static constexpr STD::uint64_t _full_mask = -1;
 
 	constexpr void _flip (size_type pos) {
 		_chunkof(pos) ^= _mask_chunkof(pos);
@@ -82,11 +82,11 @@ public:
 	constexpr size_type size() const {return N;}
 
 	constexpr bool none() const {
-		return Constainer::find(begin(_storage), end(_storage), 0, std::not_equal_to<>()) == end(_storage);
+		return Constainer::find(begin(_storage), end(_storage), 0, STD::not_equal_to<>()) == end(_storage);
 	}
 	constexpr bool any() const {return !none();}
 	constexpr bool all() const {
-		return Constainer::find(begin(_storage), end(_storage)-1, _full_mask, std::not_equal_to<>()) == end(_storage)-1
+		return Constainer::find(begin(_storage), end(_storage)-1, _full_mask, STD::not_equal_to<>()) == end(_storage)-1
 		    && _storage.back() + 1 == _mask_chunkof(size());
 	}
 
@@ -144,17 +144,17 @@ public:
 	}
 
 	constexpr size_type leading(bool value) const {
-		std::size_t count = 0;
+		STD::size_t count = 0;
 		for (auto& c : _storage) {
 			auto v = value? ~c : c;
 			if (v != 0)
-				return std::min<size_type>(size(), count++*_bits_per_chunk + count_trailing(v));
+				return STD::min<size_type>(size(), count++*_bits_per_chunk + count_trailing(v));
 		}
 
 		return size();
 	}
 
-	template <typename CharT = char, std::size_t MaxN = N,
+	template <typename CharT = char, STD::size_t MaxN = N,
 	          typename CharTraits=Constainer::CharTraits<CharT>>
 	constexpr BasicString<CharT, MaxN, CharTraits> to_string(CharT zero='0', CharT one='1') const
 	{
@@ -182,13 +182,13 @@ private:
 public:
 
 	friend constexpr Bitset operator|( Bitset const& lhs, Bitset const& rhs ) {
-		return _apply(lhs, rhs, std::bit_or<>());
+		return _apply(lhs, rhs, STD::bit_or<>());
 	}
 	friend constexpr Bitset operator&( Bitset const& lhs, Bitset const & rhs ) {
-		return _apply(lhs, rhs, std::bit_and<>());
+		return _apply(lhs, rhs, STD::bit_and<>());
 	}
 	friend constexpr Bitset operator^( Bitset const& lhs, Bitset const& rhs ) {
-		return _apply(lhs, rhs, std::bit_xor<>());
+		return _apply(lhs, rhs, STD::bit_xor<>());
 	}
 };
 

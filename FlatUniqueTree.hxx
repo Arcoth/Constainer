@@ -54,7 +54,7 @@ public:
 
 	template <typename InputIt>
 	constexpr FlatUniqueTree(InputIt first, InputIt last, value_compare const& comp) :
-		_base(std::true_type{}, first, last, comp) {}
+		_base(STD::true_type{}, first, last, comp) {}
 	template <typename InputIt>
 	constexpr FlatUniqueTree(InputIt first, InputIt last) :
 		FlatUniqueTree(first, last, value_compare{}) {}
@@ -65,50 +65,50 @@ public:
 	constexpr FlatUniqueTree(ordered_unique_range_t, InputIt first, InputIt last) :
 		FlatUniqueTree(ordered_unique_range, first, last, value_compare{}) {}
 
-	constexpr FlatUniqueTree(std::initializer_list<value_type> ilist) :
+	constexpr FlatUniqueTree(STD::initializer_list<value_type> ilist) :
 		FlatUniqueTree(ilist.begin(), ilist.end()) {}
-	constexpr FlatUniqueTree(ordered_unique_range_t, std::initializer_list<value_type> ilist) :
+	constexpr FlatUniqueTree(ordered_unique_range_t, STD::initializer_list<value_type> ilist) :
 		FlatUniqueTree(ordered_unique_range, ilist.begin(), ilist.end()) {}
-	constexpr FlatUniqueTree(std::initializer_list<value_type> ilist, value_compare const& vcmp) :
+	constexpr FlatUniqueTree(STD::initializer_list<value_type> ilist, value_compare const& vcmp) :
 		FlatUniqueTree(ilist.begin(), ilist.end(), vcmp) {}
-	constexpr FlatUniqueTree(ordered_unique_range_t, std::initializer_list<value_type> ilist, value_compare const& vcmp) :
+	constexpr FlatUniqueTree(ordered_unique_range_t, STD::initializer_list<value_type> ilist, value_compare const& vcmp) :
 		FlatUniqueTree(ordered_unique_range, ilist.begin(), ilist.end(), vcmp) {}
 
-	constexpr std::pair<iterator, bool> insert(const_reference val) {
+	constexpr STD::pair<iterator, bool> insert(const_reference val) {
 		return _base::insert_unique(val);
 	}
-	constexpr std::pair<iterator, bool> insert(value_type&& val) {
-		return _base::insert_unique(std::move(val));
+	constexpr STD::pair<iterator, bool> insert(value_type&& val) {
+		return _base::insert_unique(STD::move(val));
 	}
 	constexpr iterator insert(const_iterator hint, const_reference val) {
 		return _base::insert_unique(hint, val);
 	}
 	constexpr iterator insert(const_iterator hint, value_type&& val) {
-		return _base::insert_unique(hint, std::move(val));
+		return _base::insert_unique(hint, STD::move(val));
 	}
 
 	template <typename InputIt>
 	constexpr void insert(InputIt first, InputIt last) {
 		_base::insert_unique(first, last);
 	}
-	constexpr void insert(std::initializer_list<value_type> ilist) {
+	constexpr void insert(STD::initializer_list<value_type> ilist) {
 		insert(ilist.begin(), ilist.end());
 	}
 	template <typename InputIt>
 	constexpr void insert(ordered_unique_range_t, InputIt first, InputIt last) {
 		_base::insert_unique(ordered_unique_range, first, last);
 	}
-	constexpr void insert(ordered_unique_range_t, std::initializer_list<value_type> ilist) {
+	constexpr void insert(ordered_unique_range_t, STD::initializer_list<value_type> ilist) {
 		insert(ordered_unique_range, ilist.begin(), ilist.end());
 	}
 
 	template <typename... Args>
-	constexpr std::pair<iterator, bool> emplace(Args&&... args) {
-		return this->emplace_unique(std::forward<Args>(args)...);
+	constexpr STD::pair<iterator, bool> emplace(Args&&... args) {
+		return this->emplace_unique(STD::forward<Args>(args)...);
 	}
 	template <typename... Args>
 	constexpr iterator emplace_hint(const_iterator hint, Args&&... args) {
-		return this->emplace_hint_unique(hint, std::forward<Args>(args)...);
+		return this->emplace_hint_unique(hint, STD::forward<Args>(args)...);
 	}
 };
 

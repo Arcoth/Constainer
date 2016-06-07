@@ -9,7 +9,7 @@
 
 namespace Constainer {
 
-template <typename T, std::size_t N>
+template <typename T, STD::size_t N>
 class ChunkPool : private Array<T, N> {
 
 	using _base = Array<T, N>;
@@ -45,7 +45,7 @@ public:
 
 	constexpr pointer grab() {
 		auto pos = _used.leading(1);
-		AssertExcept<std::bad_alloc>(pos != this->size());
+		AssertExcept<STD::bad_alloc>(pos != this->size());
 		_used.set(pos);
 		auto& ref = _base::operator[](pos);
 		ref = value_type();

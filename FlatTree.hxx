@@ -30,7 +30,7 @@ namespace detail {
 		}
 	};
 	template <typename Compare, typename Value, typename KeyOfValue>
-	class ValueComparator<Compare, Value, KeyOfValue, std::enable_if_t<std::is_final<Compare>{} or not std::is_class<Compare>{}>>  {;
+	class ValueComparator<Compare, Value, KeyOfValue, STD::enable_if_t<STD::is_final<Compare>{} or not STD::is_class<Compare>{}>>  {;
 		Compare _comp;
 
 	protected:
@@ -48,7 +48,7 @@ namespace detail {
 template <typename Key, typename Value, typename KeyOfValue, typename Compare, typename Container>
 class FlatTree : private ValueComparator<Compare, Value, KeyOfValue>
 {
-	static constexpr bool _constIterator = std::is_same<Key, Value>::value;
+	static constexpr bool _constIterator = STD::is_same<Key, Value>::value;
 
 public:
 	using key_type = Key;
@@ -58,7 +58,7 @@ public:
 
 	using container_type = Container;
 
-	static_assert( std::is_same<typename container_type::value_type, value_type>{} );
+	static_assert( STD::is_same<typename container_type::value_type, value_type>{} );
 
 	using pointer         = typename container_type::pointer;
 	using const_pointer   = typename container_type::const_pointer;
@@ -70,18 +70,18 @@ public:
 private:
 	template <bool _const>
 	class _iterator_base : RandomAccessIteratable<_iterator_base<_const>,
-	                                              std::conditional_t<_const, const_pointer  , pointer  >,
-	                                              std::conditional_t<_const, const_reference, reference>, std::ptrdiff_t>
+	                                              STD::conditional_t<_const, const_pointer  , pointer  >,
+	                                              STD::conditional_t<_const, const_reference, reference>, STD::ptrdiff_t>
 	{
 		using _iter_type = typename container_type::const_iterator;
-		using _iter_traits = std::iterator_traits<std::conditional_t<_const or _constIterator, typename container_type::const_iterator,
+		using _iter_traits = STD::iterator_traits<STD::conditional_t<_const or _constIterator, typename container_type::const_iterator,
 		                                                                                       typename container_type::      iterator>>;
 		_iter_type _iter{};
 
 		friend FlatTree;
 		constexpr _iterator_base(_iter_type it) : _iter(it) {}
 
-		template <bool _const2, std::enable_if_t<(_const2 >  _const), int> = 0>
+		template <bool _const2, STD::enable_if_t<(_const2 >  _const), int> = 0>
 		constexpr _iterator_base(_iterator_base<_const2> i) : _iter(i._iter) {}
 
 	public:
@@ -90,9 +90,9 @@ private:
 		using reference         = typename _iter_traits::reference;
 		using pointer           = typename _iter_traits::pointer;
 		using difference_type   = typename _iter_traits::difference_type;
-		using iterator_category = std::random_access_iterator_tag;
+		using iterator_category = STD::random_access_iterator_tag;
 
-		template <bool _const2, std::enable_if_t<(_const2 <= _const), long> = 0>
+		template <bool _const2, STD::enable_if_t<(_const2 <= _const), long> = 0>
 		constexpr _iterator_base(_iterator_base<_const2> i) : _iter(i._iter) {}
 
 		constexpr _iterator_base() = default;
@@ -123,15 +123,15 @@ private:
 
 	template <typename T>
 	constexpr iterator _inject( const_iterator it, T&& t ) {
-		return _container.insert(it, std::forward<T>(t));
+		return _container.insert(it, STD::forward<T>(t));
 	}
 
 protected:
 	constexpr value_compare const& _val_comp() const {return *this;}
 	constexpr   key_compare const& _key_comp() const {return *this;}
 
-	using _const_iter_pair = std::pair<const_iterator, const_iterator>;
-	using _iter_pair = std::pair<iterator, iterator>;
+	using _const_iter_pair = STD::pair<const_iterator, const_iterator>;
+	using _iter_pair = STD::pair<iterator, iterator>;
 
 public:
 
@@ -144,7 +144,7 @@ public:
 	explicit FlatTree( value_compare const& comp ) : value_compare(comp) {}
 
 	template <bool Unique, typename InputIt>
-	constexpr FlatTree( std::bool_constant<Unique>, InputIt first, InputIt last,
+	constexpr FlatTree( STD::bool_constant<Unique>, InputIt first, InputIt last,
 	                    value_compare const& comp)
 		: value_compare(comp)
 	{
@@ -287,7 +287,7 @@ public:
 	}
 	constexpr iterator insert_equal(value_type&& val) {
 		auto i = upper_bound(KeyOfValue()(val));
-		return _container.insert(i, std::move(val));
+		return _container.insert(i, STD::move(val));
 	}
 
 	constexpr iterator insert_equal(const_iterator hint, const_reference val) {
@@ -296,19 +296,19 @@ public:
 	}
 	constexpr iterator insert_equal(const_iterator hint, value_type&& mval) {
 		hint = _equal_find_insertion_spot(hint, mval);
-		return _inject(hint, std::move(mval));
+		return _inject(hint, STD::move(mval));
 	}
 
-	constexpr std::pair<iterator, bool> insert_unique(const_reference val) {
+	constexpr STD::pair<iterator, bool> insert_unique(const_reference val) {
 		auto ret = _unique_find_insertion_spot(val);
 		if (ret.second)
 			return {_inject(ret.first, val), true};
 		return {unconstifyIterator(_container, ret.first), false};
 	}
-	constexpr std::pair<iterator, bool> insert_unique(value_type&& val) {
+	constexpr STD::pair<iterator, bool> insert_unique(value_type&& val) {
 		auto ret = _unique_find_insertion_spot(val);
 		if (ret.second)
-			return {_inject(ret.first, std::move(val)), true};
+			return {_inject(ret.first, STD::move(val)), true};
 		return {unconstifyIterator(_container, ret.first), false};
 	}
 
@@ -321,12 +321,12 @@ public:
 	constexpr iterator insert_unique(const_iterator hint, value_type&& val) {
 		auto ret = _unique_find_insertion_spot(hint, val);
 		if (ret.second)
-			return _inject(ret.first, std::move(val));
+			return _inject(ret.first, STD::move(val));
 		return unconstifyIterator(_container, ret.first);
 	}
 private:
 	template <typename InputIt>
-	constexpr void _insert_unique(ordered_unique_range_t, InputIt first, InputIt last, std::input_iterator_tag) {
+	constexpr void _insert_unique(ordered_unique_range_t, InputIt first, InputIt last, STD::input_iterator_tag) {
 		auto pos = end();
 		for (; first != last; ++first) {
 			pos = insert_unique(pos, *first).first;
@@ -335,8 +335,8 @@ private:
 	}
 
 	template <typename BiDirIt>
-	constexpr void _insert_unique(ordered_unique_range_t, BiDirIt first, BiDirIt last, std::bidirectional_iterator_tag) {
-		_insert_ordered_range(std::true_type{}, first, last);
+	constexpr void _insert_unique(ordered_unique_range_t, BiDirIt first, BiDirIt last, STD::bidirectional_iterator_tag) {
+		_insert_ordered_range(STD::true_type{}, first, last);
 	}
 
 public:
@@ -360,7 +360,7 @@ public:
 
 private:
 	template <typename InputIt>
-	constexpr void _insert_equal(ordered_range_t, InputIt first, InputIt last, std::input_iterator_tag) {
+	constexpr void _insert_equal(ordered_range_t, InputIt first, InputIt last, STD::input_iterator_tag) {
 		auto pos = end();
 		while (first != last) {
 			// Potential performance boost if several elements can be inserted adjacently
@@ -370,7 +370,7 @@ private:
 	}
 
 	template <typename BiDirIt>
-	constexpr void _insert_equal(ordered_range_t, BiDirIt first, BiDirIt last, std::bidirectional_iterator_tag) {
+	constexpr void _insert_equal(ordered_range_t, BiDirIt first, BiDirIt last, STD::bidirectional_iterator_tag) {
 		insert_ordered_range(false, first, last);
 	}
 
@@ -382,24 +382,24 @@ public:
 	}
 
 	template <typename... Args>
-	constexpr std::pair<iterator, bool> emplace_unique(Args&&... args) {
-		value_type val(std::forward<Args>(args)...);
-		return insert_unique(std::move(val));
+	constexpr STD::pair<iterator, bool> emplace_unique(Args&&... args) {
+		value_type val(STD::forward<Args>(args)...);
+		return insert_unique(STD::move(val));
 	}
 	template <typename... Args>
 	constexpr iterator emplace_hint_unique(const_iterator hint, Args&&... args) {
-		value_type val(std::forward<Args>(args)...);
-		return insert_unique(hint, std::move(val));
+		value_type val(STD::forward<Args>(args)...);
+		return insert_unique(hint, STD::move(val));
 	}
 	template <typename... Args>
 	constexpr iterator emplace_equal(Args&&... args) {
-		value_type val(std::forward<Args>(args)...);
-		return insert_equal(std::move(val));
+		value_type val(STD::forward<Args>(args)...);
+		return insert_equal(STD::move(val));
 	}
 	template <typename... Args>
 	constexpr iterator emplace_hint_equal(const_iterator hint, Args&&... args) {
-		value_type val(std::forward<Args>(args)...);
-		return insert_equal(hint, std::move(val));
+		value_type val(STD::forward<Args>(args)...);
+		return insert_equal(hint, STD::move(val));
 	}
 
 	constexpr       iterator nth(size_type i)       {return begin() + i;}
@@ -450,17 +450,17 @@ protected:
 		return unconstifyIterator(_container, as_const(*this)._upper_bound(first, last, key));
 	}
 
-	constexpr std::pair<const_iterator, bool> _unique_find_insertion_spot(const_iterator first, const_iterator last, const_reference val) const {
+	constexpr STD::pair<const_iterator, bool> _unique_find_insertion_spot(const_iterator first, const_iterator last, const_reference val) const {
 		auto const& cmp = _val_comp();
 		auto it = _lower_bound(first, last, KeyOfValue()(val));
 		return {it, it == last || cmp(val, *it)};
 	}
 
-	constexpr std::pair<const_iterator, bool> _unique_find_insertion_spot(const_reference val) const {
+	constexpr STD::pair<const_iterator, bool> _unique_find_insertion_spot(const_reference val) const {
 		return _unique_find_insertion_spot(begin(), end(), val);
 	}
 
-	constexpr std::pair<const_iterator, bool> _unique_find_insertion_spot(const_iterator hint, const_reference val) const {
+	constexpr STD::pair<const_iterator, bool> _unique_find_insertion_spot(const_iterator hint, const_reference val) const {
 		// N1780:
 		// To insert val at hint:
 		// if hint == end || val <= *hint
@@ -475,7 +475,7 @@ protected:
 		auto const& cmp = _val_comp();
 		auto last = end();
 		if (hint == last || cmp(val, *hint)) {
-			std::pair<const_iterator, bool> rval = {}; rval.second = true;
+			STD::pair<const_iterator, bool> rval = {}; rval.second = true;
 			auto first = begin();
 			rval.first = hint;
 			if (hint == first)
@@ -559,7 +559,7 @@ protected:
 
 	/**< The following algorithm was taken from boost::container::flat_tree<>::priv_insert_ordered_range. */
 	template <bool Unique, typename BiDirIt>
-	constexpr void _insert_ordered_range(std::bool_constant<Unique>, BiDirIt first, BiDirIt last)
+	constexpr void _insert_ordered_range(STD::bool_constant<Unique>, BiDirIt first, BiDirIt last)
 	{
 		size_type len = Constainer::distance(first, last), BurstSize=len;
 		//Auxiliary data for insertion positions.
@@ -569,7 +569,7 @@ protected:
 		//Loop in burst sizes
 		bool back_insert = false;
 		while (len != 0 && not back_insert) {
-			auto burst = std::min(len, BurstSize);
+			auto burst = STD::min(len, BurstSize);
 			size_type unique_burst = 0, checked = 0;
 			for(; checked != burst; ++checked) {
 				//Get the insertion position for each key
@@ -592,7 +592,7 @@ protected:
 				}
 			}
 			if (unique_burst != 0) {
-				AssertExcept<std::bad_alloc>(max_size() - size() >= unique_burst);
+				AssertExcept<STD::bad_alloc>(max_size() - size() >= unique_burst);
 				insert_ordered_at(_container, unique_burst, first, positions.begin() + checked);
 				pos += unique_burst;
 			}

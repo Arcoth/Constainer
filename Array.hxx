@@ -4,21 +4,23 @@
 
 #pragma once
 
-#include "Algorithms.hxx"
 #include "Iterator.hxx"
 
+#include "impl/Algorithms/BinarySeqOps.hxx"
+#include "impl/Algorithms/Transformations.hxx"
+
 #include <cstddef> // size_t
-#include <algorithm> // std::max
+#include <algorithm> // STD::max
 
 namespace Constainer {
 
-template <typename T, std::size_t Size>
+template <typename T, STD::size_t Size = defaultContainerSize>
 struct Array {
 
-	using size_type = std::size_t;
+	using size_type = STD::size_t;
 	CONSTAINER_PURE_CONST static auto constexpr size() {return Size;}
 
-	using difference_type = std::ptrdiff_t;
+	using difference_type = STD::ptrdiff_t;
 
 	using value_type = T;
 
@@ -34,7 +36,7 @@ struct Array {
 	using const_reverse_iterator = Constainer::reverse_iterator<const_iterator>;
 	using       reverse_iterator = Constainer::reverse_iterator<      iterator>;
 
-	T _storage[std::max(size(), {1})];
+	T _storage[STD::max(size(), {1})];
 
 	constexpr pointer       data()       {return _storage;}
 	constexpr const_pointer data() const {return _storage;}
@@ -67,36 +69,36 @@ struct Array {
 	}
 
 	constexpr void swap(Array& other) {
-		swap( _storage, other._storage );
+		Constainer::swap( _storage, other._storage );
 	}
 };
 
-template <typename T, std::size_t N>
+template <typename T, STD::size_t N>
 constexpr void swap( Array<T, N>& lhs, Array<T, N>& rhs ) {
 	lhs.swap(rhs);
 }
 
-template <typename T1, std::size_t N1, typename T2, std::size_t N2>
+template <typename T1, STD::size_t N1, typename T2, STD::size_t N2>
 constexpr bool operator<( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
 	return N1 <= N2 && (N1 < N2 || lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end()));
 }
-template <typename T1, std::size_t N1, typename T2, std::size_t N2>
+template <typename T1, STD::size_t N1, typename T2, STD::size_t N2>
 constexpr bool operator>( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
 	return rhs < lhs;
 }
-template <typename T1, std::size_t N1, typename T2, std::size_t N2>
+template <typename T1, STD::size_t N1, typename T2, STD::size_t N2>
 constexpr bool operator==( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
 	return equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
-template <typename T1, std::size_t N1, typename T2, std::size_t N2>
+template <typename T1, STD::size_t N1, typename T2, STD::size_t N2>
 constexpr bool operator!=( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
 	return !(lhs == rhs);
 }
-template <typename T1, std::size_t N1, typename T2, std::size_t N2>
+template <typename T1, STD::size_t N1, typename T2, STD::size_t N2>
 constexpr bool operator<=( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
 	return !(lhs > rhs);
 }
-template <typename T1, std::size_t N1, typename T2, std::size_t N2>
+template <typename T1, STD::size_t N1, typename T2, STD::size_t N2>
 constexpr bool operator>=( Array<T1, N1> const& lhs, Array<T2, N2> const& rhs ){
 	return !(lhs < rhs);
 }
