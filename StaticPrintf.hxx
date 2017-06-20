@@ -869,14 +869,6 @@ struct Parser {
 	struct handleArgIndexOpt<STD::enable_if_t<genIndexInfo<ch...>::info.read != 0>, ch...>
 		: handleArgIndex<genIndexInfo<ch...>::info.isPercentSignTerm, genIndexInfo<ch...>> {};
 
-	template <typename P>
-	static constexpr P findFirstFormatSpec ( P str )
-	{
-		while (*str && (*str != Tokens::percent || *++str == Tokens::percent) )
-			++str;
-		return str;
-	}
-
 	template <CharT... ch>
 	struct parse
 	{
@@ -884,7 +876,15 @@ struct Parser {
 		template <CharT...>
 		friend struct parse;
 
-		static constexpr const CharT str[] {ch..., '\0'};
+		template <typename P>
+		static constexpr P findFirstFormatSpec ( P str )
+		{
+			while (*str && (*str != Tokens::percent || *++str == Tokens::percent) )
+				++str;
+			return str;
+		}
+
+		static constexpr CharT str[] {ch..., '\0'};
 		static constexpr auto formatSpecPos = findFirstFormatSpec(str)-str;
 		static_assert (formatSpecPos < sizeof str);
 
