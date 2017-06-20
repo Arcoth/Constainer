@@ -215,7 +215,7 @@ public:
 
 	constexpr       iterator find(key_type const& key) {
 		auto i = lower_bound(key), last = end();
-		return i == last || _key_comp()(key, *i)? last : i;
+		return i == last || _key_comp()(key, i->key())? last : i;
 	}
 	constexpr const_iterator find(key_type const& key) const {
 		return const_cast<FlatTree*>(this)->find(key);
